@@ -4,6 +4,11 @@ import logger from "../utils/logger.js";
 import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import jwt from "jsonwebtoken";
+import { runGraph } from "../core/langgraph.runner.js";
+import { getHistory, saveMessage } from "../controllers/message.controllers.js";
+import { getOrCreateConversation } from "../controllers/conversation.controllers.js";
+import { Conversation } from "../models/conversation.model.js";
+import { createCustomer } from "../controllers/customer.controllers.js";
 
 dotenv.config({
   path: "./.env",
@@ -24,6 +29,7 @@ const socket = (server, sessionMiddleware) => {
 
   io.on("connection", async (socket) => {
     const session = socket.request.session;
+    const clientConvoId = socket.handshake.query.conversationId;
 
     // 🔥 Ensure session exists
     if (!session) {
@@ -31,15 +37,35 @@ const socket = (server, sessionMiddleware) => {
       return socket.disconnect(); // 🔥 stop execution
     }
 
-    // 🔥 Create session ID if not exists
-    if (!session.conversationId) {
-      session.conversationId = `convo_${Date.now()}_${Math.random()}`;
-      session.save(); // 🔥 ensure persistence
+    let cachedConversation = null;
+    let cachedHistory = [];
+
+    // ✅ check for actual value
+    if (clientConvoId && clientConvoId !== "") {
+      const exists = await Conversation.findOne({ sessionId: clientConvoId });
+      if (exists) {
+        session.conversationId = clientConvoId;
+        session.save();
+        cachedConversation = exists;
+        cachedHistory = await getHistory(exists._id);
+      } else {
+        // ID not in DB — treat as new guest
+        session.conversationId = `convo_${Date.now()}_${Math.random()}`;
+        session.save();
+      }
+    } else {
+      if (!session.conversationId) {
+        session.conversationId = `convo_${Date.now()}_${Math.random()}`;
+        session.save();
+      }
     }
 
     const conversationKey = session.conversationId;
-
+    socket.emit("session", { conversationId: conversationKey });
     console.log("Connected:", conversationKey);
+
+    // Send history if exists
+    socket.emit("message-history", { messages: cachedHistory });
 
     // 🔥 JOIN ROOM
     socket.join(conversationKey);
@@ -48,56 +74,103 @@ const socket = (server, sessionMiddleware) => {
     socket.on("send-message", async (msg, callback) => {
       try {
         const { text } = msg;
-        if (!text) return;
-        // 1. get/create conversation
-        // let convo = await getOrCreateConversation({
-        //   sessionId: conversationKey,
-        // });
+        if (!text) {
+          return callback({ success: false, error: "Empty message" });
+        }
 
         console.log(text);
+        callback({ success: true });
+
+        //1. Create conversation only on first message
+        if (!cachedConversation) {
+          cachedConversation = await getOrCreateConversation({
+            sessionId: conversationKey,
+            channel: "web",
+          });
+        }
 
         // 2. save user message
-        // await saveMessage({
-        //   conversationId: convo._id,
-        //   sender: "customer",
-        //   content: text,
-        // });
+        await saveMessage({
+          conversationId: cachedConversation._id,
+          sender: "user",
+          content: text,
+        });
 
-        // 3. intent
-        // const intent = classifyIntent(text);
+        // 3. Add to history cache — AI needs current message for context
+        cachedHistory.push[{ sender: "user", content: text }];
 
-        // 4. history
-        // const history = await getHistory(convo._id);
+        // 4. Run LangGraph
+        //    - text       : latest user message
+        //    - history    : full message history so AI has context
+        //    - state      : current flow/step/data/intent from conversation
+        //                   so AI knows where the user left off (e.g. mid-booking)
+        const result = await runGraph({
+          text,
+          history: cachedHistory,
+          state: cachedConversation.state,
+        });
 
-        // 5. AI
-        // const { reply, state } = await processAI({
-        //   text,
-        //   history,
-        // });
+        // 5. Save AI reply
+        await saveMessage({
+          conversationId: cachedConversation._id,
+          sender: "ai",
+          content: result.result,
+        });
 
-        // 6. update state
-        // convo.state = {
-        //   ...convo.state,
-        //   ...state,
-        //   intent,
-        // };
+        // 6. Add AI reply to history cache
+        cachedHistory.push({ sender: "ai", content: result.result });
 
-        // convo = updateConversationStatus(convo, intent, convo.state);
-        // await convo.save();
+        // 7. Update conversation state with whatever LangGraph returned
+        //    This persists intent/flow/step/data for the next turn
+        const newState = {
+          intent: result.intent,
+          flow: result.flow,
+          step: result.step,
+          data: result.data,
+        };
 
-        // 7. save AI
-        // await saveMessage({
-        //   conversationId: convo._id,
-        //   sender: "ai",
-        //   content: reply,
-        // });
-        // 🔥 PRIVATE RESPONSE
-        // io.to(conversationKey).emit("receive-message", {
-        //   msg: reply,
-        // });
-        callback({ success: true });
+        // 8. Update in-memory cache with new state
+        cachedConversation.state = newState;
+
+        // 9. Build DB update object using newState directly
+        const dbUpdate = { state: newState };
+
+        // 10. Attach businessId if AI matched a business for first time
+        if (result.businessId && !cachedConversation.businessId) {
+          dbUpdate.businessId = result.businessId;
+          cachedConversation.businessId = result.businessId; // ✅ update cache too
+        }
+
+        // 11. If booking confirmed — create customer and reset state
+        if (result.flow === "booking" && result.step === "confirmed") {
+          const customer = await createCustomer(result);
+
+          // Attach customerId to conversation
+          dbUpdate.customerId = customer._id;
+
+          //  If booking flow just completed, clear the scratchpad data
+          const resetState = {
+            intent: result.intent,
+            flow: "none",
+            step: "start",
+            data: {},
+          };
+          dbUpdate.state = resetState; // ✅ DB gets reset state
+          cachedConversation.state = resetState; // ✅ cache gets reset state
+        }
+
+        // 12. update and save to DB
+        await Conversation.findByIdAndUpdate(cachedConversation._id, dbUpdate);
+
+        // 13. Send reply to user
+        io.to(conversationKey).emit("receive-message", {
+          msg: result.result,
+        });
       } catch (err) {
         console.error(err);
+        socket.emit("message-error", {
+          msg: "Something went wrong. Please try again.",
+        });
       }
     });
 

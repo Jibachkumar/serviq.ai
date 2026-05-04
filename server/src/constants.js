@@ -48,3 +48,12 @@ export const SERVICE_CONFIG_MAP = {
     ],
   },
 };
+
+// /constants/aiFlowFields.js
+
+export const FLOW_REQUIRED_FIELDS = {
+  rental: ["serviceId", "startDate", "endDate", "phone"],
+  order: ["serviceId", "quantity", "address", "phone"],
+  booking: ["serviceId", "date", "name", "phone"],
+  service: ["serviceId", "date", "address", "phone"],
+};

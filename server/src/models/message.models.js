@@ -7,11 +7,12 @@ const messageSchema = new Schema(
     },
     sender: {
       type: String,
-      emun: ["ai", "owner", "customer"],
+      enum: ["ai", "owner", "user"],
     },
     content: {
       type: String,
     },
+
     options: [], // for buttons
   },
   { timestamps: true },
