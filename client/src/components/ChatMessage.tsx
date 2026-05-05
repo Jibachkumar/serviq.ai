@@ -29,17 +29,34 @@ export default function ChatSupport() {
     }
   }, [isOpen]);
 
+  const existingConvoId = localStorage.getItem("conversationId");
+  console.log("🔑 Existing convoId:", existingConvoId);
+
   // SOCKET INIT
   useEffect(() => {
+    const existingConvoId = localStorage.getItem("conversationId");
+    console.log("🔑 Existing convoId:", existingConvoId);
+
     // create a brand-new socket connection every time the component re-renders or mounts.
     const socket = io(import.meta.env.VITE_API_URL as string, {
       withCredentials: true, // 🔥 IMPORTANT for session cookies,
-      autoConnect: false, // socket connection is created only once
+      autoConnect: true, // connect immediately on mount
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
+      query: {
+        conversationId: existingConvoId ?? "", // ← is this being sent?
+      },
     });
     socketRef.current = socket;
+
+    socket.on("session", (data: { conversationId: string }) => {
+      localStorage.setItem("conversationId", data.conversationId);
+    });
+
+    socket.on("upgrade-session", () => {
+      localStorage.removeItem("conversationId"); // ✅ remove when booking starts
+    });
 
     return () => {
       socket.disconnect();
@@ -54,14 +71,6 @@ export default function ChatSupport() {
 
     if (socket.connected) {
       setIsConnected(true);
-    }
-
-    if (isOpen && !socket.connected) {
-      socket.connect();
-    }
-
-    if (!isOpen && socket.connected) {
-      socket.disconnect(); // 🔥 cleanup
     }
 
     /* ✅ CONNECTION EVENTS */
@@ -79,9 +88,23 @@ export default function ChatSupport() {
       setIsTyping(false);
     };
 
+    const handleMessageError = (data: { msg: string }) => {
+      setIsTyping(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          msg: data.msg,
+          sender: "ai",
+          time: new Date().toISOString(),
+        },
+      ]);
+    };
+
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleError);
+    socket.on("message-error", handleMessageError);
 
     // ✅ Listen for messages from server
     const handleReceive = (data: { msg: string }) => {
@@ -104,8 +127,9 @@ export default function ChatSupport() {
       socket.off("disconnect", handleDisconnect);
       socket.off("receive-message", handleReceive);
       socket.off("connect_error", handleError);
+      socket.off("message-error", handleMessageError);
     };
-  }, [isOpen]);
+  }, []);
 
   /* ================= AUTO SCROLL ================= */
   useEffect(() => {
@@ -135,7 +159,7 @@ export default function ChatSupport() {
     // send to server
     console.log(payload);
     socket
-      .timeout(5000)
+      .timeout(30000)
       .emit(
         "send-message",
         payload,
@@ -171,7 +195,7 @@ export default function ChatSupport() {
     setIsTyping(true);
 
     socket
-      .timeout(5000)
+      .timeout(3000)
       .emit(
         "send-message",
         { text: msg.msg },
@@ -203,16 +227,16 @@ export default function ChatSupport() {
       {/* Chat Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-10 right-16 z-50 bg-fuchsia-700 text-white p-4 rounded-full shadow-lg hover:bg-fuchsia-800 transition"
+        className="fixed bottom-20 right-20 z-50 bg-purple/90 text-white p-4 rounded-full shadow-xl hover:bg-purple transition"
       >
         <MessageCircle size={24} />
       </button>
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 flex flex-col w-80 h-[500px] bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="fixed bottom-34 right-20 flex flex-col w-[550px] h-[500px] bg-white rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-fuchsia-700 to-pink-600 p-4 text-white flex items-center justify-between">
+          <div className="bg-gradient-to-r from-purple via-purple to-purple p-4 text-white flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold">AI Assistant</h2>
               <p className="text-xs opacity-80">
@@ -222,7 +246,7 @@ export default function ChatSupport() {
           </div>
 
           {/* Chat Body */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-surface overflow-hidden">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -231,10 +255,10 @@ export default function ChatSupport() {
                 }`}
               >
                 <div
-                  className={`px-4 py-2 rounded-2xl shadow-sm ${
+                  className={`px-[14px] py-[10px] text-[13px] leading-[1.5] ${
                     msg.sender === "user"
-                      ? "bg-fuchsia-700 text-white rounded-br-none"
-                      : "bg-fuchsia-100 text-gray-800 rounded-bl-none"
+                      ? "bg-purple text-white border-none rounded-[14px_14px_4px_14px]"
+                      : "bg-surface text-text border border-border rounded-[14px_14px_14px_4px]"
                   }`}
                 >
                   <div className="text-xs opacity-70 font-semibold">
@@ -245,7 +269,7 @@ export default function ChatSupport() {
                   {msg.sender === "user" && (
                     <div className="text-xs mt-1 text-right">
                       {msg.status === "sending" && "Sending..."}
-                      {msg.status === "sent" && "✓ Sent"}
+                      {msg.status === "sent" && "✓✓"}
                       {msg.status === "failed" && (
                         <span
                           className="text-red-500 cursor-pointer"
@@ -271,18 +295,18 @@ export default function ChatSupport() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-gray-200 p-3 flex items-center gap-2 bg-white">
+          <div className="px-4 py-3 border-t border-border flex gap-2 bg-surface items-center ">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               type="text"
               placeholder="Type your message..."
-              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+              className="flex-1 px-3 py-2 text-sm border border-border outline-none rounded-full hover:border-purple/50"
             />
             <button
               onClick={sendMessage}
-              className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white p-2 rounded-full transition"
+              className=" text-white bg-purple p-2 rounded-full transition"
             >
               <Send size={18} />
             </button>

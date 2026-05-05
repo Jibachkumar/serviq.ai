@@ -1,1 +1,122 @@
 @import "tailwindcss";
+
+@theme {
+  /* Grays / Backgrounds */
+  --color-ink: var(--ink);
+  --color-ink-light: var(--inkLight);
+  --color-surface: var(--surface);
+  --color-faint: var(--faint);
+
+  /* Borders */
+  --color-border: var(--border);
+
+  /* Brand Colors */
+  --color-purple: var(--purple);
+  --color-purple-light: var(--purpleLight);
+  --color-purple-dim: var(--purpleDim);
+
+  --color-teal: var(--teal);
+  --color-teal-dim: var(--tealDim);
+
+  --color-coral: var(--coral);
+
+  /* Typography */
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+}
+
+:root {
+  --ink: #0a0a0f;
+  --inkLight: #13131a;
+  --surface: #16161e;
+  --border: #2a2a38;
+  --purple: #695ce0;
+  --purpleLight: #a99ef8;
+  --purpleDim: #2d2858;
+  --teal: #2ddab4;
+  --tealDim: #0d3d35;
+  --coral: #ff6b6b;
+  --text: #e8e6ff;
+  --muted: #7a7890;
+  --faint: #2e2c3a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Syne", sans-serif;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  opacity: 0;
+  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Grid bg */
+.grid-pattern {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}

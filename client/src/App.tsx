@@ -1,12 +1,19 @@
 import "./App.css";
 import ChatMessage from "./components/ChatMessage";
+import Header from "./components/header/Header";
+import { Outlet } from "react-router-dom";
 
 function App() {
   return (
     <>
-      <div className=" w-full bg-slate-50 h-full">
-        <div className="w-full">{/* <Header /> */}</div>
-        <main className="w-full ">{/* <Outlet /> */}</main>
+      <div className="bg-ink">
+        <div>
+          <Header />
+        </div>
+        <main className="">
+          {" "}
+          <Outlet />
+        </main>
         <div className="relative">
           <ChatMessage />
         </div>
