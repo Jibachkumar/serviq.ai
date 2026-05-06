@@ -67,6 +67,13 @@ const socket = (server, sessionMiddleware) => {
     // Send history if exists
     socket.emit("message-history", { messages: cachedHistory });
 
+    if (!cachedHistory || cachedHistory.length === 0) {
+      socket.emit("receive-message", {
+        msg: "Hi! What service do you need today?",
+        isWelcome: true,
+      });
+    }
+
     // 🔥 JOIN ROOM
     socket.join(conversationKey);
 
@@ -97,7 +104,7 @@ const socket = (server, sessionMiddleware) => {
         });
 
         // 3. Add to history cache — AI needs current message for context
-        cachedHistory.push[{ sender: "user", content: text }];
+        cachedHistory.push({ sender: "user", content: text });
 
         // 4. Run LangGraph
         //    - text       : latest user message

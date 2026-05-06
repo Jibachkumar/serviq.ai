@@ -78,7 +78,7 @@ a {
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(100px);
   }
   to {
     opacity: 1;

@@ -1,6 +1,93 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback, memo } from "react";
 import { Send, MessageCircle } from "lucide-react";
 import { io, Socket } from "socket.io-client";
+
+const ChatInput = memo(
+  ({
+    input,
+    setInput,
+    sendMessage,
+    handleKeyDown,
+    inputRef,
+  }: {
+    input: string;
+    setInput: (v: string) => void;
+    sendMessage: () => void;
+    handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    inputRef: React.MutableRefObject<string>;
+  }) => {
+    return (
+      <div className="px-4 py-3 border-t border-border flex gap-2 bg-surface items-center">
+        <input
+          value={input}
+          onChange={(e) => {
+            setInput(e.target.value);
+            inputRef.current = e.target.value; // ✅ sync ref
+          }}
+          onKeyDown={handleKeyDown}
+          type="text"
+          placeholder="Type your message..."
+          className="flex-1 px-3 py-2 text-sm border border-border outline-none rounded-full"
+        />
+        <button
+          onClick={sendMessage}
+          className="text-white bg-purple p-2 rounded-full"
+        >
+          <Send size={18} />
+        </button>
+      </div>
+    );
+  },
+);
+
+const MessageList = memo(function MessageList({
+  messages,
+  retryMessage,
+}: {
+  messages: any[];
+  retryMessage: (msg: any) => void;
+}) {
+  return (
+    <>
+      {messages.map((msg) => (
+        <div
+          key={msg.id}
+          className={`flex ${
+            msg.sender === "user" ? "justify-end" : "justify-start"
+          }`}
+        >
+          <div
+            className={`px-[14px] py-[10px] text-[13px] leading-[1.5] ${
+              msg.sender === "user"
+                ? "bg-purple text-white rounded-[14px_14px_4px_14px]"
+                : "bg-surface text-text border border-border rounded-[14px_14px_14px_4px]"
+            }`}
+          >
+            <div className="text-xs opacity-70 font-semibold">
+              {msg.sender === "user" ? "You" : "AI"}
+            </div>
+            <div>{msg.msg}</div>
+            {/* status */}
+            {msg.sender === "user" && (
+              <div className="text-xs mt-1 text-right">
+                {msg.status === "sending" && "Sending..."}
+                {msg.status === "sent" && ""}
+                {msg.status === "failed" && (
+                  <span
+                    className="text-red-500 cursor-pointer"
+                    onClick={() => retryMessage(msg)}
+                  >
+                    Failed. Retry
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+});
 
 export default function ChatSupport() {
   type Status = "sending" | "sent" | "failed";
@@ -16,10 +103,10 @@ export default function ChatSupport() {
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<string>("");
 
   /* ================= RESET STATES ON CLOSE ================= */
   useEffect(() => {
@@ -28,9 +115,6 @@ export default function ChatSupport() {
       setInput("");
     }
   }, [isOpen]);
-
-  const existingConvoId = localStorage.getItem("conversationId");
-  console.log("🔑 Existing convoId:", existingConvoId);
 
   // SOCKET INIT
   useEffect(() => {
@@ -69,22 +153,29 @@ export default function ChatSupport() {
     const socket = socketRef.current;
     if (!socket) return;
 
-    if (socket.connected) {
-      setIsConnected(true);
-    }
+    // ✅ Listen for messages from server
+    const handleReceive = (data: { msg: string; isWelcome?: boolean }) => {
+      setIsTyping(false);
 
-    /* ✅ CONNECTION EVENTS */
-    const handleConnect = () => {
-      setIsConnected(true);
-    };
+      setMessages((prev) => {
+        // ❌ prevent duplicate welcome
+        if (data.isWelcome && prev.length > 0) return prev;
 
-    const handleDisconnect = () => {
-      setIsConnected(false);
+        return [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            msg: data.msg,
+            sender: "ai",
+            time: new Date().toISOString(),
+          },
+        ];
+      });
     };
 
     const handleError = (err: Error) => {
       console.error("❌ Socket error:", err.message);
-      setIsConnected(false);
+      // setIsConnected(false);
       setIsTyping(false);
     };
 
@@ -101,33 +192,29 @@ export default function ChatSupport() {
       ]);
     };
 
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
+    const handleHistory = (data: {
+      messages: { sender: "user" | "ai"; content: string }[];
+    }) => {
+      const formatted = data.messages.map((m) => ({
+        id: crypto.randomUUID(),
+        msg: m.content,
+        sender: m.sender,
+        time: new Date().toISOString(),
+      }));
+
+      setMessages(formatted);
+    };
+
+    socket.on("receive-message", handleReceive);
     socket.on("connect_error", handleError);
     socket.on("message-error", handleMessageError);
-
-    // ✅ Listen for messages from server
-    const handleReceive = (data: { msg: string }) => {
-      setIsTyping(false);
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          msg: data.msg,
-          sender: "ai",
-          time: new Date().toISOString(),
-        },
-      ]);
-    };
-    socket.on("receive-message", handleReceive);
+    socket.on("message-history", handleHistory);
 
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
       socket.off("receive-message", handleReceive);
       socket.off("connect_error", handleError);
       socket.off("message-error", handleMessageError);
+      socket.off("message-history", handleHistory);
     };
   }, []);
 
@@ -137,11 +224,12 @@ export default function ChatSupport() {
   }, [messages]);
 
   /* ================= SEND MESSAGE ================= */
-  const sendMessage = () => {
+  const sendMessage = useCallback(() => {
     const socket = socketRef.current;
-    if (!socket || !input.trim()) return;
+    const value = inputRef.current;
+    if (!socket || !value.trim()) return;
 
-    const payload = { text: input };
+    const payload = { text: value };
     const id = crypto.randomUUID();
 
     // show user message instantly
@@ -149,7 +237,7 @@ export default function ChatSupport() {
       ...prev,
       {
         id: id,
-        msg: input,
+        msg: value,
         sender: "user",
         time: new Date().toISOString(),
         status: "sending",
@@ -180,11 +268,12 @@ export default function ChatSupport() {
         },
       );
     setInput("");
+    inputRef.current = "";
     setIsTyping(true);
-  };
+  }, []);
 
   /* ================= RETRY ================= */
-  const retryMessage = (msg: Message) => {
+  const retryMessage = useCallback((msg: Message) => {
     setMessages((prev) =>
       prev.map((m) => (m.id === msg.id ? { ...m, status: "sending" } : m)),
     );
@@ -215,12 +304,15 @@ export default function ChatSupport() {
           );
         },
       );
-  };
+  }, []);
 
   /* ================= ENTER KEY ================= */
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") sendMessage();
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") sendMessage();
+    },
+    [sendMessage],
+  );
 
   return (
     <div className="relative">
@@ -234,55 +326,23 @@ export default function ChatSupport() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-34 right-20 flex flex-col w-[550px] h-[500px] bg-white rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
+        <div className="fixed bottom-34 right-20 flex flex-col w-[525px] h-[452px] bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple via-purple to-purple p-4 text-white flex items-center justify-between">
+          <div className="bg-surface border-b border-border px-[18px] py-[18px] text-white flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold">AI Assistant</h2>
-              <p className="text-xs opacity-80">
-                {isConnected ? "Online" : "Reconnecting..."}
-              </p>
+              <div className="font-['Syne',sans-serif] text-[13px] font-semibold text-text">
+                Serviq AI
+              </div>
+              <div className="flex items-center gap-1 text-[11px] text-teal">
+                <div className="h-[5px] w-[5px] rounded-full bg-teal animate-[pulse_2s_infinite]" />
+                Always online
+              </div>
             </div>
           </div>
 
           {/* Chat Body */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-surface overflow-hidden">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${
-                  msg.sender === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`px-[14px] py-[10px] text-[13px] leading-[1.5] ${
-                    msg.sender === "user"
-                      ? "bg-purple text-white border-none rounded-[14px_14px_4px_14px]"
-                      : "bg-surface text-text border border-border rounded-[14px_14px_14px_4px]"
-                  }`}
-                >
-                  <div className="text-xs opacity-70 font-semibold">
-                    {msg.sender === "user" ? "You" : "AI"}
-                  </div>
-                  <div>{msg.msg}</div>
-                  {/* status */}
-                  {msg.sender === "user" && (
-                    <div className="text-xs mt-1 text-right">
-                      {msg.status === "sending" && "Sending..."}
-                      {msg.status === "sent" && "✓✓"}
-                      {msg.status === "failed" && (
-                        <span
-                          className="text-red-500 cursor-pointer"
-                          onClick={() => retryMessage(msg)}
-                        >
-                          Failed. Retry
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-surface">
+            <MessageList messages={messages} retryMessage={retryMessage} />
 
             {isTyping && (
               <div className="text-sm text-gray-400 italic">
@@ -295,22 +355,13 @@ export default function ChatSupport() {
           </div>
 
           {/* Input */}
-          <div className="px-4 py-3 border-t border-border flex gap-2 bg-surface items-center ">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              type="text"
-              placeholder="Type your message..."
-              className="flex-1 px-3 py-2 text-sm border border-border outline-none rounded-full hover:border-purple/50"
-            />
-            <button
-              onClick={sendMessage}
-              className=" text-white bg-purple p-2 rounded-full transition"
-            >
-              <Send size={18} />
-            </button>
-          </div>
+          <ChatInput
+            input={input}
+            setInput={setInput}
+            sendMessage={sendMessage}
+            handleKeyDown={handleKeyDown}
+            inputRef={inputRef}
+          />
         </div>
       )}
     </div>

@@ -79,19 +79,19 @@ function Hero() {
             </div>
           </div>
 
-          <h1 className="fade-up [animation-delay:0.2s] text-[clamp(40px,5vw,64px)] font-extrabold leading-[1.05] mb-6">
+          <h1 className="fade-up [animation-delay:0.5s] text-[clamp(40px,5vw,64px)] font-extrabold leading-[1.05] mb-6">
             Your local business,{" "}
             <span className="bg-linear-to-r from-purple to-teal bg-clip-text text-transparent">
               online & automated
             </span>
           </h1>
 
-          <p className="fade-up [animation-delay:0.3s] text-[18px] text-muted leading-[1.7] mb-[36px] max-w-[480px]">
+          <p className="fade-up [animation-delay:0.7s] text-[18px] text-muted leading-[1.7] mb-[36px] max-w-[480px]">
             List your services once. Our AI handles every customer inquiry,
             booking, and follow-up — 24/7. No developer needed.
           </p>
 
-          <div className="fade-up [animation-delay:0.4s] flex flex-wrap gap-3 mb-[48px]">
+          <div className="fade-up [animation-delay:0.8s] flex flex-wrap gap-3 mb-[48px]">
             <button className="px-[28px] py-[14px] rounded-[10px] text-[15px] font-semibold bg-purple text-white font-['Syne',sans-serif] shadow-[0_0_40px_rgba(123,110,246,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_40px_rgba(123,110,246,0.38)] active:scale-95">
               List your business — free
             </button>
@@ -121,7 +121,7 @@ function Hero() {
             </button>
           </div>
 
-          <div className="fade-up [animation-delay:0.5s] flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8">
+          <div className="fade-up [animation-delay:0.9s] flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8">
             {[
               ["10 min", "to go live"],
               ["24/7", "AI coverage"],
