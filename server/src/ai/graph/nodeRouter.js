@@ -1,5 +1,3 @@
-import { END } from "@langchain/langgraph";
-
 export function router(state) {
   console.log("🔀 Router called with:", {
     intent: state.intent,
@@ -12,13 +10,30 @@ export function router(state) {
     return "end";
   }
 
-  if (state.intent === "browse_services" && !state.data.businessTypes) {
-    console.log("✅ Routing to TOOL");
-    return "tool";
+  if (state.intent === "unknown") {
+    return "end";
   }
 
-  if (state.intent === "service_query" && !state.data.services) {
-    return "tool";
+  if (state.intent === "complaint") {
+    return "end"; // no tool needed, AI handles it directly
+  }
+
+  if (state.intent === "browse_services") {
+    if (!state.data?.toolCalled) {
+      console.log("✅ Routing to TOOL: browse_services");
+      return "tool";
+    }
+    // tool already ran this turn → end
+    return "end";
+  }
+
+  if (state.intent === "service_query") {
+    if (!state.data?.toolCalled) {
+      console.log("✅ Routing to TOOL: service_query");
+      return "tool";
+    }
+    // tool already ran this turn → end
+    return "end";
   }
 
   // still collecting details → end this turn, wait for next user message

@@ -9,7 +9,7 @@ export async function toolNode(state) {
       const result = await listServices(state);
       console.log("🔧 Services fetched:", result);
       return {
-        data: { services: result.services },
+        data: { services: result.services, toolCalled: true },
         businessId: result.businessId ?? state.businessId,
         step: "start",
         result: result.result ?? null,
@@ -19,10 +19,11 @@ export async function toolNode(state) {
     // User is vague — just browsing
     case "browse_services": {
       const result = await listBusinessTypes();
+      console.log("🔧 browse_service:", result);
       return {
-        data: { businessTypes: result.businessTypes },
+        data: { businessTypes: result.businessTypes, toolCalled: true },
         step: "start",
-        result: "Here are available service categories:",
+        result: `Here are the available categories: ${result.businessTypes.join(", ")}`,
       };
     }
 

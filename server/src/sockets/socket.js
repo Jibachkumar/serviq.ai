@@ -1,18 +1,33 @@
 import dotenv from "dotenv";
 import { Server } from "socket.io";
 import logger from "../utils/logger.js";
-import { User } from "../models/user.models.js";
-import { ApiError } from "../utils/ApiError.js";
-import jwt from "jsonwebtoken";
 import { runGraph } from "../core/langgraph.runner.js";
 import { getHistory, saveMessage } from "../controllers/message.controllers.js";
 import { getOrCreateConversation } from "../controllers/conversation.controllers.js";
 import { Conversation } from "../models/conversation.model.js";
 import { createCustomer } from "../controllers/customer.controllers.js";
+import { Agent } from "../models/AIConfig.models.js";
+import { Tool } from "../models/tool.models.js";
 
 dotenv.config({
   path: "./.env",
 });
+
+let cachedAgent = null;
+let cachedTools = [];
+
+// Helper: load agent + tools once we know the businessId
+async function loadAgentConfig(businessId) {
+  if (!businessId) return;
+  const [agent, tools] = await Promise.all([
+    Agent.findOne({ businessId }),
+    Tool.find({ businessId, enabled: true }),
+  ]);
+  cachedAgent = agent;
+  cachedTools = tools.map((t) => t.name); // ["checkAvailability", "createBooking"]
+}
+
+const HISTORY_DISPLAY_LIMIT = 10;
 
 const socket = (server, sessionMiddleware) => {
   const io = new Server(server, {
@@ -65,7 +80,18 @@ const socket = (server, sessionMiddleware) => {
     console.log("Connected:", conversationKey);
 
     // Send history if exists
-    socket.emit("message-history", { messages: cachedHistory });
+    // Send paginated history on connect (most recent page)
+    const totalMessages = cachedHistory.length;
+    const initialHistory = cachedHistory.slice(-HISTORY_DISPLAY_LIMIT);
+    socket.emit("message-history", {
+      messages: initialHistory,
+      pagination: {
+        page: 1,
+        totalPages: Math.ceil(totalMessages / HISTORY_DISPLAY_LIMIT),
+        totalMessages,
+        hasMore: totalMessages > HISTORY_DISPLAY_LIMIT,
+      },
+    });
 
     if (!cachedHistory || cachedHistory.length === 0) {
       socket.emit("receive-message", {
@@ -80,7 +106,7 @@ const socket = (server, sessionMiddleware) => {
     // ✅ send message
     socket.on("send-message", async (msg, callback) => {
       try {
-        const { text } = msg;
+        const { text, page = 1 } = msg;
         if (!text) {
           return callback({ success: false, error: "Empty message" });
         }
@@ -95,6 +121,8 @@ const socket = (server, sessionMiddleware) => {
             channel: "web",
           });
         }
+
+        // await loadAgentConfig(cachedConversation._id);
 
         // 2. save user message
         await saveMessage({
@@ -111,21 +139,31 @@ const socket = (server, sessionMiddleware) => {
         //    - history    : full message history so AI has context
         //    - state      : current flow/step/data/intent from conversation
         //                   so AI knows where the user left off (e.g. mid-booking)
+        // agent           : each business has each prompt, tone,
+        //  tools          : each business has its own feature
         const result = await runGraph({
           text,
           history: cachedHistory,
           state: cachedConversation.state,
+          // agent: cachedAgent,
+          // tools: cachedTools,
+          page,
         });
 
         // 5. Save AI reply
-        await saveMessage({
-          conversationId: cachedConversation._id,
-          sender: "ai",
-          content: result.result,
-        });
-
-        // 6. Add AI reply to history cache
-        cachedHistory.push({ sender: "ai", content: result.result });
+        if (
+          result.result &&
+          typeof result.result === "string" &&
+          result.result.trim()
+        ) {
+          await saveMessage({
+            conversationId: cachedConversation._id,
+            sender: "ai",
+            content: result.result,
+          });
+          // 6. Add AI reply to history cache
+          cachedHistory.push({ sender: "ai", content: result.result });
+        }
 
         // 7. Update conversation state with whatever LangGraph returned
         //    This persists intent/flow/step/data for the next turn
@@ -172,6 +210,7 @@ const socket = (server, sessionMiddleware) => {
         // 13. Send reply to user
         io.to(conversationKey).emit("receive-message", {
           msg: result.result,
+          pagination: result.pagination,
         });
       } catch (err) {
         console.error(err);
