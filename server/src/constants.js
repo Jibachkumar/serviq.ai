@@ -2,7 +2,7 @@ export const DB_NAME = "serviq";
 
 export const BUSINESS_SERVICE_MAP = {
   ecommerce: ["order"],
-  home_services: ["service"],
+  Home_services: ["service"],
   travel: ["booking", "rental"],
   rental_booking: ["rental", "booking"],
   food_beverage: ["order"],

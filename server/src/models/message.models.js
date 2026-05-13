@@ -10,7 +10,7 @@ const messageSchema = new Schema(
       enum: ["ai", "owner", "user"],
     },
     content: {
-      type: String,
+      type: mongoose.Schema.Types.Mixed,
     },
 
     options: [], // for buttons

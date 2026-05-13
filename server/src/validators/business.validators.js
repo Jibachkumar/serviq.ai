@@ -8,10 +8,11 @@ const businessSchema = Joi.object({
   }),
 
   type: Joi.string()
-    .valid("travel", "shop", "ecommerce", "rental")
+    .valid("travel", "shop", "ecommerce", "rental", "Home_services")
     .required()
     .messages({
-      "any.only": "type must be travel, shop, rental, or ecommerce",
+      "any.only":
+        "type must be travel, shop, rental, Home_services, or ecommerce",
       "any.required": "type is required",
     }),
 });

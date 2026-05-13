@@ -3,37 +3,31 @@ export function router(state) {
     intent: state.intent,
     step: state.step,
     hasBusinessTypes: !!state.data?.businessTypes,
-    hasServices: !!state.data?.services,
+    hasCategories: !!state.data?.categories,
+    hasProviders: !!state.data?.providers,
   });
 
-  if (state.intent === "greeting") {
-    return "end";
+  const directResponseIntents = ["unknown", "complaint", "cancellation"];
+
+  if (directResponseIntents.includes(state.intent)) {
+    return "response";
   }
 
-  if (state.intent === "unknown") {
-    return "end";
-  }
-
-  if (state.intent === "complaint") {
-    return "end"; // no tool needed, AI handles it directly
-  }
-
-  if (state.intent === "browse_services") {
-    if (!state.data?.toolCalled) {
+  if (state.intent === "browse_services" || state.intent === "greeting") {
+    if (!state.toolCalled) {
       console.log("✅ Routing to TOOL: browse_services");
       return "tool";
     }
-    // tool already ran this turn → end
-    return "end";
+
+    // return "end";
   }
 
   if (state.intent === "service_query") {
-    if (!state.data?.toolCalled) {
+    if (!state.toolCalled) {
       console.log("✅ Routing to TOOL: service_query");
       return "tool";
     }
-    // tool already ran this turn → end
-    return "end";
+    // return "end";
   }
 
   // still collecting details → end this turn, wait for next user message
@@ -48,10 +42,10 @@ export function router(state) {
   }
 
   console.log("⚠️ Falling through to END");
-  return "end";
+  return "response";
 }
 /*
-aiNode → router → toolNode → aiNode → END
+aiNode → router → toolNode → responseNode → END
 
 So your tools will be real functions like:
 listServices({ businessType })     → queries Service model
@@ -67,7 +61,7 @@ The next user message starts a fresh invoke with updated state.
 Turn 1  User: "I need a plumber"
         ai    → intent: service_query, step: confirmed
         tool  → listServices() → returns plumbers
-        ai    → "Here are 3 plumbers available..."
+        responseNode    → "Here are 3 plumbers available..."
         END
 
 Turn 2  User: "I want to book John"
@@ -81,6 +75,6 @@ Turn 3  User: "New York"
 Turn 4  User: "123456"
         ai    → step: confirmed, all data collected
         tool  → createBooking()
-        ai    → "Booking confirmed for John tomorrow at 3pm!"
+        responseNode    → "Booking confirmed for John tomorrow at 3pm!"
         END
 */

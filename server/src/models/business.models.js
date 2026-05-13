@@ -16,6 +16,9 @@ const businessSchema = new Schema(
     },
     type: {
       type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
       enum: [
         "rental_booking", // bike, car, camera, equipment etc
         "ecommerce",

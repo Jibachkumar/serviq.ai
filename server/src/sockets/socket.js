@@ -13,20 +13,6 @@ dotenv.config({
   path: "./.env",
 });
 
-let cachedAgent = null;
-let cachedTools = [];
-
-// Helper: load agent + tools once we know the businessId
-async function loadAgentConfig(businessId) {
-  if (!businessId) return;
-  const [agent, tools] = await Promise.all([
-    Agent.findOne({ businessId }),
-    Tool.find({ businessId, enabled: true }),
-  ]);
-  cachedAgent = agent;
-  cachedTools = tools.map((t) => t.name); // ["checkAvailability", "createBooking"]
-}
-
 const HISTORY_DISPLAY_LIMIT = 10;
 
 const socket = (server, sessionMiddleware) => {
@@ -52,8 +38,22 @@ const socket = (server, sessionMiddleware) => {
       return socket.disconnect(); // 🔥 stop execution
     }
 
+    // ✅ Per-connection cache — not shared across users
     let cachedConversation = null;
     let cachedHistory = [];
+    let cachedAgent = null;
+    let cachedTools = [];
+
+    // ─── Load business own agent, tool config lazily
+    const loadAgentConfig = async (businessId) => {
+      if (!businessId) return;
+      const [agent, tools] = await Promise.all([
+        Agent.findOne({ businessId }),
+        Tool.find({ businessId, enabled: true }),
+      ]);
+      cachedAgent = agent;
+      cachedTools = tools.map((t) => t.name); // ["checkAvailability", "createBooking"]
+    };
 
     // ✅ check for actual value
     if (clientConvoId && clientConvoId !== "") {
@@ -63,6 +63,12 @@ const socket = (server, sessionMiddleware) => {
         session.save();
         cachedConversation = exists;
         cachedHistory = await getHistory(exists._id);
+
+        // ✅ If this conversation already has a businessId — load agent now
+        // Returning user — we already know their business
+        if (exists.businessId) {
+          await loadAgentConfig(exists.businessId);
+        }
       } else {
         // ID not in DB — treat as new guest
         session.conversationId = `convo_${Date.now()}_${Math.random()}`;
@@ -95,7 +101,10 @@ const socket = (server, sessionMiddleware) => {
 
     if (!cachedHistory || cachedHistory.length === 0) {
       socket.emit("receive-message", {
-        msg: "Hi! What service do you need today?",
+        payload: {
+          type: "text",
+          message: "Welcome to the serviq. What service do you need today?",
+        },
         isWelcome: true,
       });
     }
@@ -122,19 +131,17 @@ const socket = (server, sessionMiddleware) => {
           });
         }
 
-        // await loadAgentConfig(cachedConversation._id);
-
         // 2. save user message
         await saveMessage({
           conversationId: cachedConversation._id,
           sender: "user",
-          content: text,
+          content: {
+            type: "text",
+            message: text,
+          },
         });
 
-        // 3. Add to history cache — AI needs current message for context
-        cachedHistory.push({ sender: "user", content: text });
-
-        // 4. Run LangGraph
+        // 3. Run LangGraph
         //    - text       : latest user message
         //    - history    : full message history so AI has context
         //    - state      : current flow/step/data/intent from conversation
@@ -145,17 +152,23 @@ const socket = (server, sessionMiddleware) => {
           text,
           history: cachedHistory,
           state: cachedConversation.state,
-          // agent: cachedAgent,
-          // tools: cachedTools,
+          agent: cachedAgent,
+          tools: cachedTools,
           page,
+        });
+        console.log(result);
+
+        // 4. Add to history cache — AI needs current message for context
+        cachedHistory.push({
+          sender: "user",
+          content: {
+            type: "text",
+            message: text,
+          },
         });
 
         // 5. Save AI reply
-        if (
-          result.result &&
-          typeof result.result === "string" &&
-          result.result.trim()
-        ) {
+        if (result.result) {
           await saveMessage({
             conversationId: cachedConversation._id,
             sender: "ai",
@@ -167,11 +180,30 @@ const socket = (server, sessionMiddleware) => {
 
         // 7. Update conversation state with whatever LangGraph returned
         //    This persists intent/flow/step/data for the next turn
+
+        // ✅ Only allow known values — strip anything the model invented
+        const VALID_FLOWS = ["none", "booking", "order", "rental", "inquiry"];
+        const VALID_STEPS = ["start", "collecting_details", "confirmed"];
+
+        // ✅ These are turn-level only — never save businessTypes, services only save customer data to DB
+        const { businessTypes, categories, providers, ...persistentData } =
+          result.data ?? {};
+
         const newState = {
           intent: result.intent,
-          flow: result.flow,
-          step: result.step,
-          data: result.data,
+          flow:
+            result.intent === "greeting"
+              ? "none"
+              : VALID_FLOWS.includes(result.flow)
+                ? result.flow
+                : "none",
+          step:
+            result.intent === "greeting"
+              ? "start"
+              : VALID_STEPS.includes(result.step)
+                ? result.step
+                : "start",
+          data: persistentData,
         };
 
         // 8. Update in-memory cache with new state
@@ -184,6 +216,8 @@ const socket = (server, sessionMiddleware) => {
         if (result.businessId && !cachedConversation.businessId) {
           dbUpdate.businessId = result.businessId;
           cachedConversation.businessId = result.businessId; // ✅ update cache too
+
+          await loadAgentConfig(result.businessId);
         }
 
         // 11. If booking confirmed — create customer and reset state
@@ -209,13 +243,16 @@ const socket = (server, sessionMiddleware) => {
 
         // 13. Send reply to user
         io.to(conversationKey).emit("receive-message", {
-          msg: result.result,
+          payload: result.result,
           pagination: result.pagination,
         });
       } catch (err) {
         console.error(err);
         socket.emit("message-error", {
-          msg: "Something went wrong. Please try again.",
+          payload: {
+            type: "error",
+            message: "Something went wrong. Please try again.",
+          },
         });
       }
     });
@@ -230,3 +267,22 @@ const socket = (server, sessionMiddleware) => {
 };
 
 export { socket };
+
+/*
+  --------multi business agent, tool loading flow-------
+  // AI just returned a businessId for the first time
+  // Load agent + tools NOW so next message uses them
+  
+  First message
+  └── agent = null, tools = []
+  └── PLATFORM_PROMPT fires
+  └── AI finds matching business
+  └── returns businessId
+  └── loadAgentConfig(businessId) runs
+
+Second message onwards
+  └── agent = { prompt, tone }
+  └── tools = ["createBooking", ...]
+  └── BUSINESS_PROMPT fires
+  └── Full business AI with personality + tools
+*/

@@ -22,15 +22,25 @@ export async function runGraph({
     const end = totalMessages - (currentPage - 1) * HISTORY_LIMIT;
     const paginatedHistory = history.slice(start, end);
 
+    const VALID_FLOWS = ["none", "booking", "order", "rental", "inquiry"];
+    const VALID_STEPS = ["start", "collecting_details", "confirmed"];
+
     const newState = {
-      // Spread current conversation state (intent, flow, step, data, context)
-      ...state,
+      // urrent conversation state (intent, flow, step, data, context)
+      // Sanitize incoming state — don't trust what model saved last turn
+      flow: VALID_FLOWS.includes(state.flow) ? state.flow : "none",
+      step: VALID_STEPS.includes(state.step) ? state.step : "start",
+      intent: state.intent ?? null,
+      data: state.data ?? {},
+      context: state.context ?? {},
+
+      agent,
+      tools,
+      toolCalled: false,
 
       // Build messages array from history + new user message
       // History comes from DB, shaped as [{ sender, content }, ...]
       messages: [...paginatedHistory, { sender: "user", content: text }],
-      // agent,
-      // tools,
     };
 
     const result = await graph.invoke(newState);

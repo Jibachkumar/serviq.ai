@@ -2,8 +2,8 @@ import { StateGraph, END } from "@langchain/langgraph";
 
 import { aiNode } from "../agent.js";
 import { toolNode } from "../nodes/tool.nodes.js";
-// import { stateNode } from "./nodes/state.node.js";
 import { router } from "./nodeRouter.js";
+import { responseNode } from "../nodes/response.nodes.js";
 
 export function buildGraph() {
   const GraphState = {
@@ -24,7 +24,7 @@ export function buildGraph() {
       default: () => "start",
     },
     businessId: {
-      value: (_, y) => y,
+      value: (x, y) => y ?? x, // ← keep existing if model returns null
       default: () => null,
     },
     data: {
@@ -32,12 +32,37 @@ export function buildGraph() {
       default: () => ({}),
     },
     context: {
-      value: (x, y) => ({ ...x, ...y }), // merge like data
-      default: () => ({ businessType: "", language: "" }),
+      value: (x, y) => ({
+        businessType:
+          y?.businessType !== undefined ? y.businessType : x?.businessType,
+
+        serviceQuery:
+          y?.serviceQuery !== undefined ? y.serviceQuery : x?.serviceQuery,
+
+        language: y?.language !== undefined ? y.language : x?.language,
+      }),
+
+      default: () => ({
+        businessType: null,
+        serviceQuery: null,
+        language: "",
+      }),
+    },
+    agent: {
+      value: (_, y) => y ?? _,
+      default: () => null,
+    },
+    tools: {
+      value: (_, y) => (y?.length ? y : _),
+      default: () => [],
     },
     result: {
       value: (_, y) => y,
       default: () => null,
+    },
+    toolCalled: {
+      value: (_, y) => y,
+      default: () => false,
     },
   };
 
@@ -49,33 +74,36 @@ export function buildGraph() {
 
   graph.addNode("ai", aiNode);
   graph.addNode("tool", toolNode);
-  // graph.addNode("state", stateNode);
+  graph.addNode("response", responseNode);
 
   graph.setEntryPoint("ai");
 
   graph.addConditionalEdges("ai", router, {
     tool: "tool",
+    response: "response",
     end: END,
   });
 
-  // tool always goes back to ai for natural reply
-  graph.addEdge("tool", "ai");
+  graph.addEdge("tool", "response");
+
+  graph.addEdge("response", END);
 
   return graph.compile();
 }
 /*
 //  mullti step flow 
-\User message
-     ↓
-  AI (1st): AI Node          ← 1st call: detects intent, result: "" (no data yet)
-     ↓
-  Router           ← sees no data → routes to "tool"
-     ↓
-  Tool Node        ← fetches real data from DB
-     ↓
-  AI (2nd): AI Node          ← 2nd call: now has data, result: "Here are services..."
-     ↓
-  Router           ← data exists → falls to "end"
-     ↓
-   END             ← graph finishes
+    User Message
+        ↓
+    aiNode
+    (intent + extraction only)
+        ↓
+    router
+        ↓
+    toolNode
+    (fetch data)
+        ↓
+    responseNode
+    (build final response)
+        ↓
+       END
 */
