@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback, memo } from "react";
 import { Send, MessageCircle } from "lucide-react";
 import { io, Socket } from "socket.io-client";
+import MessageRenderer from "./MessageRenderer";
 
 const ChatInput = memo(
   ({
@@ -42,9 +43,11 @@ const ChatInput = memo(
 
 const MessageList = memo(function MessageList({
   messages,
+  sendMessage,
   retryMessage,
 }: {
   messages: any[];
+  sendMessage: (text?: string) => void;
   retryMessage: (msg: any) => void;
 }) {
   return (
@@ -59,14 +62,19 @@ const MessageList = memo(function MessageList({
           <div
             className={`px-[14px] py-[10px] text-[13px] leading-[1.5] ${
               msg.sender === "user"
-                ? "bg-purple text-white rounded-[14px_14px_4px_14px]"
-                : "bg-surface text-text border border-border rounded-[14px_14px_14px_4px]"
+                ? "bg-purple/80 text-white rounded-[14px_14px_4px_14px]"
+                : ""
             }`}
           >
-            <div className="text-xs opacity-70 font-semibold">
+            {/* <div className="text-xs opacity-70 font-semibold">
               {msg.sender === "user" ? "You" : "AI"}
-            </div>
-            <div>{msg.msg}</div>
+            </div> */}
+            <MessageRenderer
+              payload={msg.payload}
+              sendMessage={sendMessage}
+              sender={msg.sender}
+            />
+            {/* <div>{msg.msg}</div> */}
             {/* status */}
             {msg.sender === "user" && (
               <div className="text-xs mt-1 text-right">
@@ -92,9 +100,21 @@ const MessageList = memo(function MessageList({
 export default function ChatSupport() {
   type Status = "sending" | "sent" | "failed";
 
+  interface ChatPayload {
+    type:
+      | "text"
+      | "error"
+      | "greeting"
+      | "providers"
+      | "categories"
+      | "businessTypes";
+    message?: string;
+    items?: any[];
+  }
+
   interface Message {
     id: string;
-    msg: string;
+    payload: ChatPayload;
     sender: "user" | "ai";
     time: string;
     status?: Status;
@@ -154,7 +174,10 @@ export default function ChatSupport() {
     if (!socket) return;
 
     // ✅ Listen for messages from server
-    const handleReceive = (data: { msg: string; isWelcome?: boolean }) => {
+    const handleReceive = (data: {
+      payload: ChatPayload;
+      isWelcome?: boolean;
+    }) => {
       setIsTyping(false);
 
       setMessages((prev) => {
@@ -165,7 +188,7 @@ export default function ChatSupport() {
           ...prev,
           {
             id: crypto.randomUUID(),
-            msg: data.msg,
+            payload: data.payload,
             sender: "ai",
             time: new Date().toISOString(),
           },
@@ -179,13 +202,13 @@ export default function ChatSupport() {
       setIsTyping(false);
     };
 
-    const handleMessageError = (data: { msg: string }) => {
+    const handleMessageError = (data: { payload: ChatPayload }) => {
       setIsTyping(false);
       setMessages((prev) => [
         ...prev,
         {
           id: crypto.randomUUID(),
-          msg: data.msg,
+          payload: data.payload,
           sender: "ai",
           time: new Date().toISOString(),
         },
@@ -193,11 +216,11 @@ export default function ChatSupport() {
     };
 
     const handleHistory = (data: {
-      messages: { sender: "user" | "ai"; content: string }[];
+      messages: { sender: "user" | "ai"; content: ChatPayload }[];
     }) => {
       const formatted = data.messages.map((m) => ({
         id: crypto.randomUUID(),
-        msg: m.content,
+        payload: m.content,
         sender: m.sender,
         time: new Date().toISOString(),
       }));
@@ -224,9 +247,9 @@ export default function ChatSupport() {
   }, [messages]);
 
   /* ================= SEND MESSAGE ================= */
-  const sendMessage = useCallback(() => {
+  const sendMessage = useCallback((text?: string) => {
     const socket = socketRef.current;
-    const value = inputRef.current;
+    const value = text ?? inputRef.current;
     if (!socket || !value.trim()) return;
 
     const payload = { text: value };
@@ -237,7 +260,7 @@ export default function ChatSupport() {
       ...prev,
       {
         id: id,
-        msg: value,
+        payload: { type: "text", message: value },
         sender: "user",
         time: new Date().toISOString(),
         status: "sending",
@@ -287,7 +310,7 @@ export default function ChatSupport() {
       .timeout(3000)
       .emit(
         "send-message",
-        { text: msg.msg },
+        { text: msg.payload.message },
         (err: any, response: { success: boolean }) => {
           if (err || !response?.success) {
             setMessages((prev) =>
@@ -326,7 +349,7 @@ export default function ChatSupport() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-34 right-20 flex flex-col w-[525px] h-[452px] bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
+        <div className="fixed bottom-34 right-20 flex flex-col w-[525px] h-[480px] bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
           {/* Header */}
           <div className="bg-surface border-b border-border px-[18px] py-[18px] text-white flex items-center justify-between">
             <div>
@@ -342,7 +365,11 @@ export default function ChatSupport() {
 
           {/* Chat Body */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-surface">
-            <MessageList messages={messages} retryMessage={retryMessage} />
+            <MessageList
+              messages={messages}
+              sendMessage={sendMessage}
+              retryMessage={retryMessage}
+            />
 
             {isTyping && (
               <div className="text-sm text-gray-400 italic">
