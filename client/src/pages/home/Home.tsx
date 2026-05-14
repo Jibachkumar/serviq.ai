@@ -60,7 +60,7 @@ function Hero() {
   }, [msgIdx]);
 
   return (
-    <div className="relative flex items-center min-h-screen overflow-hidden pt-[68px]">
+    <div className="relative flex items-center lg:min-h-screen overflow-hidden pt-[68px]">
       {/* Grid background */}
       <div className="grid-pattern absolute inset-0 opacity-30" />
 
@@ -69,33 +69,33 @@ function Hero() {
 
       <div className="absolute bottom-[5%] right-[5%] h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,var(--tealDim)_0%,transparent_70%)] opacity-40 animate-[orb_15s_ease-in-out_infinite_reverse] pointer-events-none" />
 
-      <div className="relative z-0 mx-auto grid w-full max-w-[1200px] grid-cols-2 items-center gap-[80px] px-8">
+      <div className="relative z-0 mx-auto grid w-full max-w-[1200px] grid-cols-1 lg:grid-cols-2 items-center lg:gap-[80px] lg:px-8 gap-14 px-5 py-10 lg:py-0">
         {/* Left */}
         <div>
           <div className="fade-up" style={{ animationDelay: "0.1s" }}>
-            <div className="inline-flex items-center gap-2 px-[14px] py-[6px] rounded-full border border-purple-dim bg-purple-dim/30 text-[12px] font-medium text-purple-light mb-[28px]">
+            <div className="inline-flex items-center gap-2 px-[14px] py-[6px] rounded-full border border-purple-dim bg-purple-dim/30 lg:text-[12px] text-[11px] font-medium text-purple-light lg:mb-[28px] mb-[20px]">
               <div className="h-1.5 w-1.5 rounded-full bg-teal animate-pulse" />
               AI-powered local business platform
             </div>
           </div>
 
-          <h1 className="fade-up [animation-delay:0.5s] text-[clamp(40px,5vw,64px)] font-extrabold leading-[1.05] mb-6">
+          <h1 className="fade-up [animation-delay:0.5s] lg:text-[clamp(40px,5vw,64px)] text-[clamp(34px,5vw,48px)] font-extrabold leading-[1.05] lg:mb-6 mb-4">
             Your local business,{" "}
             <span className="bg-linear-to-r from-purple to-teal bg-clip-text text-transparent">
               online & automated
             </span>
           </h1>
 
-          <p className="fade-up [animation-delay:0.7s] text-[18px] text-muted leading-[1.7] mb-[36px] max-w-[480px]">
+          <p className="fade-up [animation-delay:0.7s] lg:text-[18px] text-[14px] text-muted leading-[1.7] lg:mb-[36px] mb-[28px] max-w-[480px]">
             List your services once. Our AI handles every customer inquiry,
             booking, and follow-up — 24/7. No developer needed.
           </p>
 
-          <div className="fade-up [animation-delay:0.8s] flex flex-wrap gap-3 mb-[48px]">
-            <button className="px-[28px] py-[14px] rounded-[10px] text-[15px] font-semibold bg-purple text-white font-['Syne',sans-serif] shadow-[0_0_40px_rgba(123,110,246,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_40px_rgba(123,110,246,0.38)] active:scale-95">
+          <div className="fade-up [animation-delay:0.8s] flex flex-wrap gap-3 lg:mb-[48px] mb-[18px]">
+            <button className="lg:px-[28px] lg:py-[14px] px-5 py-2 rounded-[10px] lg:text-[15px] text-[13px] lg:font-semibold font-medium bg-purple text-white font-['Syne',sans-serif] shadow-[0_0_40px_rgba(123,110,246,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_40px_rgba(123,110,246,0.38)] active:scale-95">
               List your business — free
             </button>
-            <button className="group flex items-center gap-2 px-[28px] py-[14px] rounded-[10px] text-[15px] bg-transparent border border-border text-text transition-colors duration-200 hover:border-muted active:scale-95">
+            <button className="group flex items-center gap-2 lg:px-[28px] lg:py-[14px] px-5 py-2 text-[15px]  text-[13px] rounded-[10px] bg-transparent border border-border text-text transition-colors duration-200 hover:border-muted active:scale-95">
               <svg
                 width="16"
                 height="16"
@@ -121,17 +121,17 @@ function Hero() {
             </button>
           </div>
 
-          <div className="fade-up [animation-delay:0.9s] flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8">
+          <div className="fade-up [animation-delay:0.9s] flex flex-row sm:items-center gap-6 gap-8">
             {[
               ["10 min", "to go live"],
               ["24/7", "AI coverage"],
               ["₹0", "to start"],
             ].map(([n, l]) => (
               <div key={n}>
-                <div className="font-['Syne',sans-serif] text-[22px] font-extrabold text-text">
+                <div className="font-['Syne',sans-serif] lg:text-[22px] text-[18px] font-extrabold text-text">
                   {n}
                 </div>
-                <div className="text-[12px] text-muted uppercase tracking-wider">
+                <div className="lg:text-[12px] text-[10.5px] text-muted uppercase tracking-wider">
                   {l}
                 </div>
               </div>
@@ -140,7 +140,10 @@ function Hero() {
         </div>
 
         {/* Right — Chat */}
-        <div className="fade-up" style={{ animationDelay: "0.5s" }}>
+        <div
+          className="fade-up w-full lg:max-w-none max-w-[430px] mx-auto"
+          style={{ animationDelay: "0.5s" }}
+        >
           <div className="bg-ink-light border border-border rounded-[20px] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] animate-[float_6s_ease-in-out_infinite]">
             {/* Chat header */}
             <div className="flex items-center gap-[10px] border-b border-border bg-surface px-[18px] py-[14px]">
@@ -184,7 +187,7 @@ function Hero() {
                 >
                   <div
                     className={`
-                      max-w-[80%] px-[14px] py-[10px] text-[13px] leading-[1.5]
+                      max-w-[80%] px-[14px] py-[10px] lg:text-[13px] text-[12px] leading-[1.5]
                       ${
                         m.role === "ai"
                           ? "bg-surface text-text border border-border rounded-[14px_14px_14px_4px]"
@@ -211,10 +214,10 @@ function Hero() {
 
             {/* Input */}
             <div className="px-4 py-3 border-t border-border flex gap-2 bg-surface">
-              <div className="flex-1 bg-faint rounded-lg px-[14px] py-2 text-[13px] text-muted border border-border outline-none">
+              <div className="flex-1 bg-faint rounded-lg px-[14px] lg:py-2 py-1.5 text-[13px] text-muted border border-border outline-none">
                 Ask about any service...
               </div>
-              <button className="w-9 h-9 rounded-lg border-none bg-purple flex items-center justify-center transition-colors hover:bg-purple-light active:scale-95">
+              <button className="w-9 h-9 lg:py-2 py-1.5 rounded-lg border-none bg-purple flex items-center justify-center transition-colors hover:bg-purple-light active:scale-95">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path
                     d="M1 7h12M8 3l5 4-5 4"
@@ -274,13 +277,13 @@ function BusinessStrip() {
   ];
 
   return (
-    <div className="relative w-full overflow-x-hidden pt-14 overflow-hidden">
+    <div className="relative w-full overflow-x-hidden lg:pt-14 pt-6  overflow-hidden">
       {/* 1. Gradient Overlays for "Fade" effect */}
       <div className="absolute inset-y-0 left-0 w-14 bg-gradient-to-r from-ink to-transparent z-10" />
       <div className="absolute inset-y-0 right-0 w-14 bg-gradient-to-l from-ink to-transparent z-10" />
       <motion.div
         ref={containerRef}
-        className="flex gap-[27px]"
+        className="flex lg:gap-[27px] gap-[8px]"
         animate={width > 0 ? { x: [0, -width] } : {}}
         transition={{
           repeat: Infinity,
@@ -294,7 +297,7 @@ function BusinessStrip() {
           return (
             <motion.div
               key={`${t.name}-${i}`}
-              className="group flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-surface text-sm text-muted cursor-pointer"
+              className="group flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-surface lg:text-sm text-[11px] text-muted cursor-pointer"
               style={{ ["--hover-color" as any]: `${t.color}80` }}
             >
               <Icon
@@ -315,7 +318,7 @@ function BusinessStrip() {
 /* ─── REGISTER INFO ─── */
 function CTA() {
   return (
-    <section className="relative overflow-hidden px-8 py-[100px] text-center">
+    <section className="relative overflow-hidden px-8 lg:py-[100px] py-[50px] text-center">
       {/* Radial Glow Background */}
       <div
         className="pointer-events-none absolute top-1/2 left-1/2 h-[300px] w-[600px] -translate-x-1/2 -translate-y-1/2"
@@ -326,27 +329,27 @@ function CTA() {
       />
 
       <div className="relative z-0">
-        <h2 className="mb-4 text-[clamp(32px,5vw,52px)] leading-tight font-bold">
+        <h2 className="mb-4 lg:text-[clamp(32px,5vw,52px)] text-[clamp(28px,5vw,52px)] leading-tight font-bold">
           Bring your local business online
           <br />
           <span style={{ color: COLORS.purple }}>today — for free</span>
         </h2>
 
-        <p className="mx-auto mb-10 max-w-[440px] text-base text-muted">
+        <p className="mx-auto mb-10 max-w-[440px] lg:text-base text-[13px] text-muted">
           No credit card. No developer. No technical knowledge. Just your
           business name and the services you offer.
         </p>
 
-        <div className="mx-auto flex max-w-[500px] gap-2.5 justify-center">
+        <div className="mx-auto flex lg:max-w-[500px] max-w-[400px] gap-2.5 justify-center">
           <input
             type="text"
             placeholder="Your business email"
-            className="flex-1 rounded-[10px] border border-border bg-ink-light px-[18px] py-[13px] text-sm text-text outline-hidden transition-colors focus:border-purple"
+            className="flex-1 rounded-[10px] border border-border bg-ink-light lg:px-[18px] lg:py-[13px] lg:text-sm text-[12px]  px-4 py-2.5 text-sm text-text outline-hidden transition-colors focus:border-purple"
           />
 
           <button
             style={{ background: COLORS.purple }}
-            className="rounded-[10px] px-6 py-[13px] font-sans-serif text-sm font-medium whitespace-nowrap text-white shadow-[0_0_30px_rgba(105,92,224,0.25)] transition-all hover:-translate-y-0.5 hover:opacity-90 active:translate-y-0"
+            className="rounded-[10px] lg:px-6 lg:py-[13px] px-4 py-2.5 font-sans-serif lg:text-sm text-[12px] font-medium whitespace-nowrap text-white shadow-[0_0_30px_rgba(105,92,224,0.25)] transition-all hover:-translate-y-0.5 hover:opacity-90 active:translate-y-0"
           >
             Get started free →
           </button>
@@ -359,12 +362,10 @@ function CTA() {
 /* ─── OWNER & CUSTOMER INFO ─── */
 function SplitSection() {
   return (
-    <section
-      style={{ padding: "100px 2rem", maxWidth: 1200, margin: "0 auto" }}
-    >
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60 }}>
+    <section className="lg:py-[100px] px-[2rem] py-[50px] mx-auto lg:max-w-[1200px] max-w-[490px]">
+      <div className=" grid grid-cols-1 gap-10 sm:gap-12 lg:grid-cols-2 lg:gap-[60px]">
         {/* For business owners */}
-        <div className="relative overflow-hidden rounded-[24px] border border-border bg-ink-light p-10">
+        <div className="relative overflow-hidden rounded-[24px] border border-border bg-ink-light lg:p-10 p-5">
           {/* Glow Effect */}
           <div
             className="absolute top-0 right-0 h-[200px] w-[200px]"
@@ -378,18 +379,18 @@ function SplitSection() {
             For business owners
           </div>
 
-          <h2 className="relative mb-4 text-[28px] leading-tight">
+          <h2 className="relative mb-4 lg:text-[28px] text-[20px] leading-tight">
             List once, let AI do the rest
           </h2>
 
-          <p className="mb-7 text-sm leading-[1.7] text-muted">
+          <p className="mb-7 lg:text-sm text-[13px] text-justify lg:text-left leading-[1.7] text-muted">
             Add your services and pricing. Your AI assistant becomes a 24/7
             customer rep — answering questions, booking appointments, and
             building your customer base automatically.
           </p>
 
           {/* Features List */}
-          <div className="space-y-3">
+          <div className="lg:space-y-3 space-y-1">
             {[
               "No website or developer needed",
               "AI handles queries around the clock",
@@ -398,7 +399,7 @@ function SplitSection() {
             ].map((f) => (
               <div
                 key={f}
-                className="flex items-center gap-2.5 text-sm text-text"
+                className="flex items-center gap-2.5 lg:text-sm text-[12px] lg:text-text text-text/90"
               >
                 <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-purple/60 bg-purple-dim/60">
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -419,7 +420,7 @@ function SplitSection() {
           {/* Mini Dashboard */}
           <div className="mt-10 rounded-[14px] border border-border bg-surface p-4">
             <div className="mb-3.5 flex items-center justify-between">
-              <span className="font-syne text-[13px] font-semibold">
+              <span className="font-syne text-[13px] lg:font-semibold font-medium">
                 Today's bookings
               </span>
               <span className="rounded-full bg-teal-dim px-2 py-0.5 text-[11px] text-teal">
@@ -438,7 +439,9 @@ function SplitSection() {
                   key={l}
                   className="rounded-xl border border-border bg-faint px-3 py-2.5"
                 >
-                  <div className="font-syne text-lg font-bold">{v}</div>
+                  <div className="font-syne lg:text-lg text-md lg:font-bold font-medium">
+                    {v}
+                  </div>
                   <div className="text-[10px] text-muted">{l}</div>
                 </div>
               ))}
@@ -447,8 +450,8 @@ function SplitSection() {
             {/* Booking Rows */}
             <div className="space-y-1.5">
               {[
-                ["Priya Sharma", "Cleaning · 3pm", "confirmed"],
-                ["Rahul Das", "Plumbing · 5pm", "pending"],
+                ["Jibachh Kumar", "Cleaning · 3pm", "confirmed"],
+                ["Ram Hari", "Plumbing · 5pm", "pending"],
               ].map(([n, s, st]) => (
                 <div
                   key={n}
@@ -474,7 +477,7 @@ function SplitSection() {
         </div>
 
         {/* For customers */}
-        <div className="relative overflow-hidden rounded-[24px] border border-border bg-ink-light p-10">
+        <div className="relative overflow-hidden rounded-[24px] border border-border bg-ink-light lg:p-10 p-5">
           {/* Glow Effect */}
           <div
             className="absolute top-0 right-0 h-[200px] w-[200px]"
@@ -488,18 +491,18 @@ function SplitSection() {
             For customers
           </div>
 
-          <h2 className="relative mb-4 text-[28px] leading-tight">
+          <h2 className="relative mb-4 lg:text-[28px] text-[20px] leading-tight">
             Book any service, just by chatting
           </h2>
 
-          <p className="mb-7 text-sm leading-[1.7] text-muted">
+          <p className="mb-7 lg:text-sm text-[13px] text-justify lg:text-left leading-[1.7] text-muted">
             No forms, no phone calls, no waiting on hold. Tell the AI what you
             need in plain language and it finds the right local business and
             confirms your booking.
           </p>
 
           {/* Features List */}
-          <div className="space-y-3">
+          <div className="lg:space-y-3 space-y-1">
             {[
               "Find local services instantly",
               "Book in under 60 seconds",
@@ -508,7 +511,7 @@ function SplitSection() {
             ].map((f) => (
               <div
                 key={f}
-                className="flex items-center gap-2.5 text-sm text-text"
+                className="flex items-center gap-2.5 lg:text-sm text-[12px] lg:text-text text-text/90"
               >
                 <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-teal/50 bg-teal-dim/50">
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -530,12 +533,22 @@ function SplitSection() {
           <div className="mt-7 overflow-hidden rounded-[14px] border border-border bg-surface">
             {/* Chat Header */}
             <div className="flex items-center gap-2.5 border-b border-border bg-faint px-4 py-3">
-              <div className="h-[30px] w-[30px] rounded-lg bg-gradient-to-br from-purple to-teal" />
-              <div>
-                <div className="font-syne text-[12px] font-semibold">
-                  Serviq AI
+              <div className="flex justify-center items-center">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] ">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="3" fill="white" />
+                    <path
+                      d="M8 1v2M8 13v2M1 8h2M13 8h2"
+                      stroke="white"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
                 </div>
-                <div className="text-[10px] text-teal">● Online</div>
+                <div className="font-syne text-[12px] lg:font-semibold font-medium">
+                  Serviq AI
+                  <div className="text-[10px] text-teal">● Online</div>
+                </div>
               </div>
             </div>
 
@@ -556,7 +569,7 @@ function SplitSection() {
                   className={`flex ${m.r === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[80%] px-3 py-2 text-[12px] ${
+                    className={`max-w-[80%] px-3 py-2 lg:text-[12px] text-[11px] ${
                       m.r === "ai"
                         ? "rounded-t-xl rounded-br-xl rounded-bl-[3px] border border-border bg-faint text-text"
                         : "rounded-t-xl rounded-bl-xl rounded-br-[3px] bg-purple text-white"
@@ -610,28 +623,28 @@ function HowItWorks() {
   return (
     <section
       style={{
-        padding: "100px 2rem",
         background: COLORS.inkLight,
         borderTop: `1px solid ${COLORS.border}`,
         borderBottom: `1px solid ${COLORS.border}`,
       }}
+      className="lg:py-[100px] py-[50px] px-[2rem]"
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div className="mb-16 text-center">
           {/* Main Heading */}
-          <h2 className="mb-3.5 text-[40px] leading-tight font-bold">
+          <h2 className="mb-3.5 lg:text-[40px] text-[32px] leading-tight font-bold">
             Simple for owners,{" "}
             <span style={{ color: COLORS.purple }}>magical for customers</span>
           </h2>
 
           {/* Description */}
-          <p className="mx-auto max-w-[500px] text-[16px] text-muted">
+          <p className="mx-auto lg:max-w-[500px] max-w-[340px] lg:text-[15px] text-[14px] text-muted">
             No complexity, no learning curve. Your business goes digital in
             minutes.
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-0.5">
+        <div className="grid lg:grid-cols-4 grid-cols-2 lg:gap-0.5 gap-1.5">
           {steps.map((s, i) => {
             const Icon = s.icon;
             return (
@@ -670,11 +683,11 @@ function HowItWorks() {
                 </div>
 
                 {/* Content */}
-                <div className="mb-2.5 font-syne text-base font-bold">
+                <div className="mb-2.5 font-syne lg:text-base text-[13.5px] font-bold">
                   {s.title}
                 </div>
 
-                <div className="text-[13px] leading-[1.65] text-muted">
+                <div className="lg:text-[13px] text-[12px] leading-[1.65] text-muted lg:text-left text-justify">
                   {s.desc}
                 </div>
               </div>
@@ -729,10 +742,11 @@ function Features() {
 
   return (
     <section
-      style={{ padding: "100px 2rem", maxWidth: 1200, margin: "0 auto" }}
+      style={{ maxWidth: 1200, margin: "0 auto" }}
+      className="lg:py-[100px] px-[2rem] py-[50px]"
     >
       <div style={{ textAlign: "center", marginBottom: 64 }}>
-        <h2 style={{ fontSize: 40, marginBottom: 14 }}>
+        <h2 className="text-[28px] leading-[1.1] font-extrabold tracking-[-0.03em] lg:text-[48px]">
           Everything your business needs
           <br />
           <span style={{ color: COLORS.purple }}>to grow on autopilot</span>
@@ -741,7 +755,7 @@ function Features() {
           Features that actually matter for local businesses
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:gap-4 gap-3">
         {features.map((f) => (
           <div
             key={f.title}
@@ -753,8 +767,10 @@ function Features() {
             className="group cursor-default rounded-2xl border border-border bg-ink-light p-7 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--feature-color)]/40"
           >
             <div className="mb-4 text-[28px]">{f.icon}</div>
-            <div className="mb-2 font-syne text-base font-bold">{f.title}</div>
-            <div className="text-[13px] leading-[1.65] text-muted">
+            <div className="mb-2 font-syne lg:text-base text-[14px] font-bold">
+              {f.title}
+            </div>
+            <div className="lg:text-[13px] text-[12px] leading-[1.65] text-muted text-justify lg:text-left">
               {f.desc}
             </div>
           </div>

@@ -342,7 +342,7 @@ export default function ChatSupport() {
       {/* Chat Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-20 right-20 z-50 bg-purple/90 text-white p-4 rounded-full shadow-xl hover:bg-purple transition"
+        className="fixed bottom-20 right-20 z-20 bg-purple/90 text-white p-4 rounded-full shadow-xl hover:bg-purple transition"
       >
         <MessageCircle size={24} />
       </button>

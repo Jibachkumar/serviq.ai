@@ -88,7 +88,7 @@ a {
 
 .fade-up {
   opacity: 0;
-  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: fadeUp 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes float {
