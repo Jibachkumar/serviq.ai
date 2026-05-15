@@ -11,7 +11,6 @@ const ChatInput = memo(
     handleKeyDown,
     inputRef,
     isSending,
-    // onFocusScroll,
   }: {
     input: string;
     isSending: boolean;
@@ -19,7 +18,6 @@ const ChatInput = memo(
     sendMessage: () => void;
     handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     inputRef: React.MutableRefObject<string>;
-    // onFocusScroll: () => void;
   }) => {
     return (
       <div className="px-4 py-3 border-t border-border flex gap-2 bg-surface items-center">
@@ -31,7 +29,6 @@ const ChatInput = memo(
             inputRef.current = e.target.value; // ✅ sync ref
           }}
           onKeyDown={handleKeyDown}
-          // onFocus={onFocusScroll}
           type="text"
           placeholder="Type your message..."
           className="flex-1 px-3 py-2 text-sm border border-border outline-none rounded-full"
@@ -400,12 +397,6 @@ export default function ChatSupport() {
     return () => vv.removeEventListener("resize", onResize);
   }, [isOpen]); // ✅ re-run when chat opens/closes
 
-  // const handleFocusScroll = useCallback(() => {
-  //   setTimeout(() => {
-  //     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  //   }, 300);
-  // }, []);
-
   return (
     <div className="relative">
       {/* Chat Icon */}
@@ -421,7 +412,7 @@ export default function ChatSupport() {
         <div
           ref={chatRef}
           style={{ height: windowHeight }}
-          className=" fixed bottom-[84px] right-[8px] lg:bottom-[137px] lg:right-[80px] w-[345px] lg:w-[525px] flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden"
+          className=" fixed bottom-[84px] right-[1px] lg:bottom-[137px] lg:right-[80px] lg:w-[525px] z-50 flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden"
         >
           {/* Header */}
           <div className="bg-surface border-b border-border px-[18px] py-[18px] text-white flex items-center justify-between">
@@ -462,7 +453,6 @@ export default function ChatSupport() {
             sendMessage={sendMessage}
             handleKeyDown={handleKeyDown}
             inputRef={inputRef}
-            // onFocusScroll={handleFocusScroll}
           />
         </div>
       )}
