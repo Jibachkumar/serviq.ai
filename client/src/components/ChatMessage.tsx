@@ -363,29 +363,34 @@ export default function ChatSupport() {
       if (chatRef.current) {
         chatRef.current.style.bottom = "";
       }
-      return;
+      return; // ✅ stop here when closed
     }
 
-    const vv = window.visualViewport; // ✅ declare vv here
+    // ✅ only runs when open
+    const vv = window.visualViewport;
     if (!vv) return;
 
     const onResize = () => {
       const vv = window.visualViewport!;
       const kbHeight = window.innerHeight - vv.height;
 
-      // subtract browser toolbar (~56px on Android Chrome) + some breathing room
-      const browserToolbar =
-        window.innerHeight - document.documentElement.clientHeight;
-      const totalHeight = vv.height - browserToolbar - 8;
-
-      setWindowHeight(`${Math.min(480, totalHeight)}px`);
-
-      if (chatRef.current) {
-        chatRef.current.style.bottom = `${kbHeight}px`;
+      // ✅ only override bottom when keyboard is actually open
+      if (kbHeight > 100) {
+        const maxHeight = vv.height - 16;
+        setWindowHeight(`${Math.min(480, maxHeight)}px`);
+        if (chatRef.current) {
+          chatRef.current.style.bottom = `${kbHeight}px`;
+        }
+      } else {
+        // ✅ keyboard closed — reset to default so Tailwind bottom-[84px] takes over
+        setWindowHeight("min(480px, calc(100dvh - 120px))");
+        if (chatRef.current) {
+          chatRef.current.style.bottom = "";
+        }
       }
     };
 
-    onResize(); // ✅ call immediately on open
+    onResize();
 
     vv.addEventListener("resize", onResize);
     return () => vv.removeEventListener("resize", onResize);
@@ -412,7 +417,7 @@ export default function ChatSupport() {
         <div
           ref={chatRef}
           style={{ height: windowHeight }}
-          className=" fixed bottom-[84px] right-[8px] lg:bottom-[137px] lg:right-[80px] w-[345px] lg:w-[525px] flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden transition-[bottom,height] duration-200 ease-out"
+          className=" fixed bottom-[84px] right-[8px] lg:bottom-[137px] lg:right-[80px] w-[345px] lg:w-[525px] flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden"
         >
           {/* Header */}
           <div className="bg-surface border-b border-border px-[18px] py-[18px] text-white flex items-center justify-between">
