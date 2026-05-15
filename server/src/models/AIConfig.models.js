@@ -17,7 +17,6 @@ const agentSchema = new Schema(
       type: String,
       default: "en",
     },
-    enabledFeatures: [], // ["booking", "recommendation"]
   },
   { timestamps: true },
 );

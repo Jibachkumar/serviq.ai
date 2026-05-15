@@ -18,6 +18,7 @@ connectDB()
   .then(() => {
     server.listen(process.env.PORT, () => {
       // getValidModel();
+
       console.log(`Server is running at port localhost:${process.env.PORT}`);
     });
   })

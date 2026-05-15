@@ -28,9 +28,9 @@ export async function runGraph({
     const newState = {
       // urrent conversation state (intent, flow, step, data, context)
       // Sanitize incoming state — don't trust what model saved last turn
+      intent: state.intent,
       flow: VALID_FLOWS.includes(state.flow) ? state.flow : "none",
       step: VALID_STEPS.includes(state.step) ? state.step : "start",
-      intent: state.intent ?? null,
       data: state.data ?? {},
       context: state.context ?? {},
 

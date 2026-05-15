@@ -62,10 +62,12 @@ app.use(express.static("public"));
 import { userRouter } from "./routers/user.routers.js";
 import { businessRouter } from "./routers/business.routers.js";
 import { serviceRouter } from "./routers/service.routes.js";
+import { agentRouter } from "./routers/AIConfig.routers.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/business", businessRouter);
 app.use("/api/v1/business", serviceRouter);
+app.use("/api/v1/agent", agentRouter);
 
 // error
 app.use((err, req, res, next) => {
