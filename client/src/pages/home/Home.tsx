@@ -362,7 +362,7 @@ function CTA() {
 /* ─── OWNER & CUSTOMER INFO ─── */
 function SplitSection() {
   return (
-    <section className="lg:py-[100px] px-[2rem] py-[50px] mx-auto lg:max-w-[1200px] max-w-[490px]">
+    <section className="lg:py-[100px] px-[2rem] py-[50px] mx-auto lg:max-w-[1200px] max-w-[600px]">
       <div className=" grid grid-cols-1 gap-10 sm:gap-12 lg:grid-cols-2 lg:gap-[60px]">
         {/* For business owners */}
         <div className="relative overflow-hidden rounded-[24px] border border-border bg-ink-light lg:p-10 p-5">
@@ -627,7 +627,7 @@ function HowItWorks() {
         borderTop: `1px solid ${COLORS.border}`,
         borderBottom: `1px solid ${COLORS.border}`,
       }}
-      className="lg:py-[100px] py-[50px] px-[2rem]"
+      className="lg:py-[100px] py-[50px] px-[1rem]"
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div className="mb-16 text-center">
@@ -743,7 +743,7 @@ function Features() {
   return (
     <section
       style={{ maxWidth: 1200, margin: "0 auto" }}
-      className="lg:py-[100px] px-[2rem] py-[50px]"
+      className="lg:py-[100px] px-[1rem] py-[50px]"
     >
       <div style={{ textAlign: "center", marginBottom: 64 }}>
         <h2 className="text-[28px] leading-[1.1] font-extrabold tracking-[-0.03em] lg:text-[48px]">
