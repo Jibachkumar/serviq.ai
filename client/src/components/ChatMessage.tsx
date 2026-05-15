@@ -362,12 +362,17 @@ export default function ChatSupport() {
     if (!vv) return;
 
     const onResize = () => {
-      const kbHeight = window.innerHeight - vv.height;
-      const available = vv.height - 120;
-      setWindowHeight(`${Math.min(480, available)}px`);
+      const vv = window.visualViewport!;
+      const offsetFromBottom = window.innerHeight - (vv.offsetTop + vv.height);
 
       if (chatRef.current) {
-        chatRef.current.style.bottom = `${kbHeight + 84}px`;
+        const headerHeight = 64; // your header px-[18px] py-[18px] approximate
+        const inputHeight = 60; // your input bar py-3 + border approximate
+        const fabGap = 12; // gap between chat window bottom and FAB
+
+        const totalHeight = Math.min(480, vv.height - fabGap);
+        setWindowHeight(`${totalHeight}px`);
+        chatRef.current.style.bottom = `${offsetFromBottom + fabGap}px`;
       }
     };
 
@@ -380,6 +385,17 @@ export default function ChatSupport() {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 300);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsTyping(false);
+      setInput("");
+      setWindowHeight("min(480px, calc(100dvh - 120px))"); // ✅ reset height
+      if (chatRef.current) {
+        chatRef.current.style.bottom = ""; // ✅ reset bottom to Tailwind class default
+      }
+    }
+  }, [isOpen]);
 
   return (
     <div className="relative">
@@ -412,7 +428,7 @@ export default function ChatSupport() {
           </div>
 
           {/* Chat Body */}
-          <div className="flex-1 overflow-y-auto space-y-3 bg-surface">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-3 bg-surface">
             <MessageList
               messages={messages}
               sendMessage={sendMessage}
