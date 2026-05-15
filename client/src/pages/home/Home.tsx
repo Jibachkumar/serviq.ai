@@ -362,7 +362,7 @@ function CTA() {
 /* ─── OWNER & CUSTOMER INFO ─── */
 function SplitSection() {
   return (
-    <section className="lg:py-[100px] px-[2rem] py-[50px] mx-auto lg:max-w-[1200px] max-w-[600px]">
+    <section className="lg:py-[100px] px-[1rem] py-[50px] mx-auto max-w-[1200px]">
       <div className=" grid grid-cols-1 gap-10 sm:gap-12 lg:grid-cols-2 lg:gap-[60px]">
         {/* For business owners */}
         <div className="relative overflow-hidden rounded-[24px] border border-border bg-ink-light lg:p-10 p-5">
@@ -627,7 +627,7 @@ function HowItWorks() {
         borderTop: `1px solid ${COLORS.border}`,
         borderBottom: `1px solid ${COLORS.border}`,
       }}
-      className="lg:py-[100px] py-[50px] px-[1rem]"
+      className="lg:py-[100px] py-[50px] px-[12px]"
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div className="mb-16 text-center">
@@ -651,7 +651,7 @@ function HowItWorks() {
               <div
                 key={s.n}
                 className={`
-                relative overflow-hidden border border-border px-7 py-8 transition-transform duration-200 hover:-translate-y-1
+                relative overflow-hidden border border-border lg:px-7 px-5 py-8 transition-transform duration-200 hover:-translate-y-1
                 ${i % 2 === 0 ? "bg-surface" : "bg-faint"}
                 ${i === 0 ? "rounded-l-2xl" : ""}
                 ${i === 3 ? "rounded-r-2xl" : ""}
@@ -743,7 +743,7 @@ function Features() {
   return (
     <section
       style={{ maxWidth: 1200, margin: "0 auto" }}
-      className="lg:py-[100px] px-[1rem] py-[50px]"
+      className="lg:py-[100px] px-[12px] py-[50px]"
     >
       <div style={{ textAlign: "center", marginBottom: 64 }}>
         <h2 className="text-[28px] leading-[1.1] font-extrabold tracking-[-0.03em] lg:text-[48px]">
@@ -755,7 +755,7 @@ function Features() {
           Features that actually matter for local businesses
         </p>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:gap-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:gap-4 gap-y-3 gap-x-2">
         {features.map((f) => (
           <div
             key={f.title}
@@ -764,7 +764,7 @@ function Features() {
                 "--feature-color": f.color,
               } as React.CSSProperties
             }
-            className="group cursor-default rounded-2xl border border-border bg-ink-light p-7 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--feature-color)]/40"
+            className="group cursor-default rounded-2xl border border-border bg-ink-light lg:p-7 p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--feature-color)]/40"
           >
             <div className="mb-4 text-[28px]">{f.icon}</div>
             <div className="mb-2 font-syne lg:text-base text-[14px] font-bold">
