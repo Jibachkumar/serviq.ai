@@ -372,7 +372,7 @@ export default function ChatSupport() {
       const kbHeight = window.innerHeight - vv.height;
 
       if (kbHeight > 100) {
-        const availableHeight = vv.height - 6;
+        const availableHeight = vv.height - 4;
         const height = Math.min(480, availableHeight);
 
         if (chatRef.current) {
