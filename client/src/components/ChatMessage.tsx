@@ -356,22 +356,26 @@ export default function ChatSupport() {
 
   // phone chat keyword
   useEffect(() => {
-    if (!isOpen) return; // ✅ only run when chat is open
+    if (!isOpen) {
+      setIsTyping(false);
+      setInput("");
+      setWindowHeight("min(480px, calc(100dvh - 120px))");
+      if (chatRef.current) {
+        chatRef.current.style.bottom = "";
+      }
+      return; // ✅ stop here when closed
+    }
 
+    // ✅ only runs when open
     const vv = window.visualViewport;
     if (!vv) return;
 
     const onResize = () => {
-      const vv = window.visualViewport!;
       const offsetFromBottom = window.innerHeight - (vv.offsetTop + vv.height);
-
+      const fabGap = 1;
+      const totalHeight = Math.min(480, vv.height - fabGap);
+      setWindowHeight(`${totalHeight}px`);
       if (chatRef.current) {
-        const headerHeight = 64; // your header px-[18px] py-[18px] approximate
-        const inputHeight = 60; // your input bar py-3 + border approximate
-        const fabGap = 12; // gap between chat window bottom and FAB
-
-        const totalHeight = Math.min(480, vv.height - fabGap);
-        setWindowHeight(`${totalHeight}px`);
         chatRef.current.style.bottom = `${offsetFromBottom + fabGap}px`;
       }
     };
@@ -385,17 +389,6 @@ export default function ChatSupport() {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 300);
   }, []);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setIsTyping(false);
-      setInput("");
-      setWindowHeight("min(480px, calc(100dvh - 120px))"); // ✅ reset height
-      if (chatRef.current) {
-        chatRef.current.style.bottom = ""; // ✅ reset bottom to Tailwind class default
-      }
-    }
-  }, [isOpen]);
 
   return (
     <div className="relative">
