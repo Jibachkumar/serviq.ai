@@ -1,4 +1,6 @@
-/\*
+MBP: minimum buyable product, knows where to sell the product, what problem are solving, who buy the product which is created to focus on.
+
+\*
 ----------------- AI workflow --------------
 Ai is used for: intent, step, context
 extraction

@@ -627,18 +627,18 @@ function HowItWorks() {
         borderTop: `1px solid ${COLORS.border}`,
         borderBottom: `1px solid ${COLORS.border}`,
       }}
-      className="lg:py-[100px] py-[50px] px-[12px]"
+      className="lg:py-[100px] py-[50px] px-[8px]"
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div className="mb-16 text-center">
           {/* Main Heading */}
-          <h2 className="mb-3.5 lg:text-[40px] text-[32px] leading-tight font-bold">
+          <h2 className="mb-3.5 lg:text-[40px] text-[34px] leading-tight font-bold">
             Simple for owners,{" "}
             <span style={{ color: COLORS.purple }}>magical for customers</span>
           </h2>
 
           {/* Description */}
-          <p className="mx-auto lg:max-w-[500px] max-w-[340px] lg:text-[15px] text-[14px] text-muted">
+          <p className="mx-auto lg:max-w-[500px] max-w-[300px] lg:text-[15px] text-[14px] text-muted">
             No complexity, no learning curve. Your business goes digital in
             minutes.
           </p>
@@ -651,7 +651,7 @@ function HowItWorks() {
               <div
                 key={s.n}
                 className={`
-                relative overflow-hidden border border-border lg:px-7 px-5 py-8 transition-transform duration-200 hover:-translate-y-1
+                relative overflow-hidden border border-border lg:px-7 px-4 py-8 transition-transform duration-200 hover:-translate-y-1
                 ${i % 2 === 0 ? "bg-surface" : "bg-faint"}
                 ${i === 0 ? "rounded-l-2xl" : ""}
                 ${i === 3 ? "rounded-r-2xl" : ""}
