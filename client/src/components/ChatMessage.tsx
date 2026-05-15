@@ -372,7 +372,7 @@ export default function ChatSupport() {
       const kbHeight = window.innerHeight - vv.height;
 
       if (kbHeight > 100) {
-        const availableHeight = vv.height - 12;
+        const availableHeight = vv.height - 10;
         const height = Math.min(480, availableHeight);
 
         if (chatRef.current) {
@@ -412,7 +412,7 @@ export default function ChatSupport() {
         <div
           ref={chatRef}
           style={{ height: windowHeight }}
-          className=" fixed bottom-[84px] right-[1px] lg:bottom-[137px] lg:right-[80px] lg:w-[525px] w-[354px] z-50 flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden touch-none"
+          className=" fixed bottom-[84px] right-[1px] lg:bottom-[137px] lg:right-[80px] lg:w-[525px] w-[356px] z-50 flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden touch-none"
         >
           {/* Header */}
           <div className="bg-surface border-b border-border px-[18px] py-[18px] text-white flex items-center justify-between">
