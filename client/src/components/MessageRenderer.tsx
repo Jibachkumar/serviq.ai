@@ -159,11 +159,13 @@ function MessageRenderer({
                   className=" w-[195px] border border-border rounded-md shadow-md items-center"
                 >
                   {/* Image */}
-                  <img
-                    src={config.image}
-                    alt={item}
-                    className="w-full h-[110px] object-cover rounded-md"
-                  />
+                  {config.image && (
+                    <img
+                      src={config.image}
+                      alt={item}
+                      className="w-full h-[110px] object-cover rounded-md"
+                    />
+                  )}
 
                   {/* Body */}
                   <div className="px-1 py-2">

@@ -10,29 +10,36 @@ const ChatInput = memo(
     sendMessage,
     handleKeyDown,
     inputRef,
+    isSending,
+    onFocusScroll,
   }: {
     input: string;
+    isSending: boolean;
     setInput: (v: string) => void;
     sendMessage: () => void;
     handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     inputRef: React.MutableRefObject<string>;
+    onFocusScroll: () => void;
   }) => {
     return (
       <div className="px-4 py-3 border-t border-border flex gap-2 bg-surface items-center">
         <input
           value={input}
+          disabled={isSending}
           onChange={(e) => {
             setInput(e.target.value);
             inputRef.current = e.target.value; // ✅ sync ref
           }}
           onKeyDown={handleKeyDown}
+          onFocus={onFocusScroll}
           type="text"
           placeholder="Type your message..."
           className="flex-1 px-3 py-2 text-sm border border-border outline-none rounded-full"
         />
         <button
-          onClick={sendMessage}
-          className="text-white bg-purple p-2 rounded-full"
+          onClick={() => sendMessage()}
+          disabled={!input.trim() || isSending}
+          className="text-white bg-purple p-2 rounded-full disabled:opacity-50"
         >
           <Send size={18} />
         </button>
@@ -119,10 +126,15 @@ export default function ChatSupport() {
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<string>("");
+  const [windowHeight, setWindowHeight] = useState(
+    "min(480px, calc(100dvh - 120px))",
+  );
+  const chatRef = useRef<HTMLDivElement>(null);
 
   /* ================= RESET STATES ON CLOSE ================= */
   useEffect(() => {
@@ -175,6 +187,7 @@ export default function ChatSupport() {
       isWelcome?: boolean;
     }) => {
       setIsTyping(false);
+      setIsSending(false);
 
       setMessages((prev) => {
         // ❌ prevent duplicate welcome
@@ -196,10 +209,12 @@ export default function ChatSupport() {
       console.error("❌ Socket error:", err.message);
       // setIsConnected(false);
       setIsTyping(false);
+      setIsSending(false);
     };
 
     const handleMessageError = (data: { payload: ChatPayload }) => {
       setIsTyping(false);
+      setIsSending(false);
       setMessages((prev) => [
         ...prev,
         {
@@ -243,53 +258,59 @@ export default function ChatSupport() {
   }, [messages]);
 
   /* ================= SEND MESSAGE ================= */
-  const sendMessage = useCallback((text?: string) => {
-    const socket = socketRef.current;
-    const value = text ?? inputRef.current;
-    if (!socket || !value.trim()) return;
+  const sendMessage = useCallback(
+    (text?: string) => {
+      if (isSending) return; // 🚫 BLOCK DOUBLE SEND
+      const socket = socketRef.current;
+      const value = text ?? inputRef.current;
+      if (!socket || !value.trim()) return;
 
-    const payload = { text: value };
-    const id = crypto.randomUUID();
+      setIsSending(true); // 🔒 LOCK CHAT
 
-    // show user message instantly
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: id,
-        payload: { type: "text", message: value },
-        sender: "user",
-        time: new Date().toISOString(),
-        status: "sending",
-      },
-    ]);
+      const payload = { text: value };
+      const id = crypto.randomUUID();
 
-    // send to server
-    console.log(payload);
-    socket
-      .timeout(30000)
-      .emit(
-        "send-message",
-        payload,
-        (err: any, response: { success: boolean }) => {
-          if (err || !response?.success) {
-            // mark failed
-            setMessages((prev) =>
-              prev.map((m) => (m.id === id ? { ...m, status: "failed" } : m)),
-            );
-            setIsTyping(false);
-            return;
-          }
-
-          // mark sent
-          setMessages((prev) =>
-            prev.map((m) => (m.id === id ? { ...m, status: "sent" } : m)),
-          );
+      // show user message instantly
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: id,
+          payload: { type: "text", message: value },
+          sender: "user",
+          time: new Date().toISOString(),
+          status: "sending",
         },
-      );
-    setInput("");
-    inputRef.current = "";
-    setIsTyping(true);
-  }, []);
+      ]);
+
+      // send to server
+      console.log(payload);
+      socket
+        .timeout(30000)
+        .emit(
+          "send-message",
+          payload,
+          (err: any, response: { success: boolean }) => {
+            if (err || !response?.success) {
+              // mark failed
+              setMessages((prev) =>
+                prev.map((m) => (m.id === id ? { ...m, status: "failed" } : m)),
+              );
+              setIsTyping(false);
+              return;
+            }
+
+            // mark sent
+            setMessages((prev) =>
+              prev.map((m) => (m.id === id ? { ...m, status: "sent" } : m)),
+            );
+          },
+        );
+      setInput("");
+      inputRef.current = "";
+      setIsTyping(true);
+    },
+    [isSending],
+  );
 
   /* ================= RETRY ================= */
   const retryMessage = useCallback((msg: Message) => {
@@ -333,13 +354,32 @@ export default function ChatSupport() {
     [sendMessage],
   );
 
+  // phone chat keyword
   useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add("chat-open");
-    } else {
-      document.body.classList.remove("chat-open");
-    }
-  }, [isOpen]);
+    if (!isOpen) return; // ✅ only run when chat is open
+
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const onResize = () => {
+      const kbHeight = window.innerHeight - vv.height;
+      const available = vv.height - 120;
+      setWindowHeight(`${Math.min(480, available)}px`);
+
+      if (chatRef.current) {
+        chatRef.current.style.bottom = `${kbHeight + 84}px`;
+      }
+    };
+
+    vv.addEventListener("resize", onResize);
+    return () => vv.removeEventListener("resize", onResize);
+  }, [isOpen]); // ✅ re-run when chat opens/closes
+
+  const handleFocusScroll = useCallback(() => {
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+  }, []);
 
   return (
     <div className="relative">
@@ -353,7 +393,11 @@ export default function ChatSupport() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className=" fixed bottom-[84px] right-[8px] lg:bottom-[137px] lg:right-[80px] w-[345px] lg:w-[525px] h-[480px] max-h-[100dvh] flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
+        <div
+          ref={chatRef}
+          style={{ height: windowHeight }}
+          className=" fixed bottom-[84px] right-[8px] lg:bottom-[137px] lg:right-[80px] w-[345px] lg:w-[525px] flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden"
+        >
           {/* Header */}
           <div className="bg-surface border-b border-border px-[18px] py-[18px] text-white flex items-center justify-between">
             <div>
@@ -388,10 +432,12 @@ export default function ChatSupport() {
           {/* Input */}
           <ChatInput
             input={input}
+            isSending={isSending}
             setInput={setInput}
             sendMessage={sendMessage}
             handleKeyDown={handleKeyDown}
             inputRef={inputRef}
+            onFocusScroll={handleFocusScroll}
           />
         </div>
       )}
