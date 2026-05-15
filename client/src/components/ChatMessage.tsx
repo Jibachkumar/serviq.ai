@@ -61,11 +61,11 @@ const MessageList = memo(function MessageList({
           key={msg.id}
           className={`flex ${
             msg.sender === "user"
-              ? "justify-end px-4 pt-4"
-              : "justify-start pl-4"
+              ? "justify-end lg:px-4 px-2 pt-4"
+              : "justify-start lg:pl-4 pl-2"
           }`}
         >
-          <div className={` text-[13px] leading-[1.5]`}>
+          <div className={` lg:text-[13px] text-[12.5px] leading-[1.5]`}>
             {/* <div className="text-xs opacity-70 font-semibold">
               {msg.sender === "user" ? "You" : "AI"}
             </div> */}
@@ -402,7 +402,7 @@ export default function ChatSupport() {
       {/* Chat Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed lg:bottom-20 lg:right-20 bottom-7 right-6 z-20 bg-purple/90 text-white p-4 rounded-full shadow-xl hover:bg-purple transition"
+        className="fixed lg:bottom-20 lg:right-20 bottom-7 right-6  bg-purple/90 text-white p-4 rounded-full shadow-xl hover:bg-purple transition"
       >
         <MessageCircle size={24} />
       </button>

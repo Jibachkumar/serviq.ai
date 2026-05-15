@@ -83,7 +83,7 @@ function MessageRenderer({
   switch (payload.type) {
     case "text":
       return sender === "ai" ? (
-        <div className="w-[375px] px-[14px] py-[12px] mt-2 bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
+        <div className="lg:w-[375px] w-[290px] px-[14px] py-[12px] mt-2 bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
           {payload.message}
         </div>
       ) : (
@@ -103,7 +103,7 @@ function MessageRenderer({
     case "greeting":
       return (
         <div className="space-y-2 w-full">
-          <div className="w-[373px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
+          <div className="lg:w-[373px] w-[290px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
             <span>{payload.message}</span>
           </div>
           <div className="flex gap-x-2  overflow-y-auto scroll-smooth snap-x snap-mandatory scrollbar-hide touch-pan-x">
@@ -147,7 +147,7 @@ function MessageRenderer({
     case "categories":
       return (
         <div className="space-y-2 w-full">
-          <div className="w-[382px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
+          <div className="lg:w-[382px]  w-[305px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
             <span className="  ">{payload.message}</span>
           </div>
           <div className="flex gap-x-2">
@@ -200,7 +200,7 @@ function MessageRenderer({
       return (
         <div className="space-y-2 w-full">
           {/* AI message bubble */}
-          <div className="w-[382px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
+          <div className="lg:w-[382px] w-[305px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
             <span>{payload.message}</span>
           </div>
 
