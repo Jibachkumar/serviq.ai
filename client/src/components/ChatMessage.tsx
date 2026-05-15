@@ -370,10 +370,15 @@ export default function ChatSupport() {
     if (!vv) return;
 
     const onResize = () => {
+      const vv = window.visualViewport!;
       const kbHeight = window.innerHeight - vv.height;
-      const totalHeight = Math.min(480, vv.height - 8);
 
-      setWindowHeight(`${totalHeight}px`);
+      // subtract browser toolbar (~56px on Android Chrome) + some breathing room
+      const browserToolbar =
+        window.innerHeight - document.documentElement.clientHeight;
+      const totalHeight = vv.height - browserToolbar - 8;
+
+      setWindowHeight(`${Math.min(480, totalHeight)}px`);
 
       if (chatRef.current) {
         chatRef.current.style.bottom = `${kbHeight}px`;
