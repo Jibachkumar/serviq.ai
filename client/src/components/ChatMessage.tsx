@@ -345,7 +345,7 @@ export default function ChatSupport() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className=" fixed bottom-[84px] right-[16px] lg:bottom-[137px] lg:right-[80px] w-[460px] lg:w-[525px] h-[480px] right-4 flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
+        <div className=" fixed bottom-[84px] right-[8px] lg:bottom-[137px] lg:right-[80px] w-[315px] lg:w-[525px] h-[480px] flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
           {/* Header */}
           <div className="bg-surface border-b border-border px-[18px] py-[18px] text-white flex items-center justify-between">
             <div>
