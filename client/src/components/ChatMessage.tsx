@@ -376,10 +376,10 @@ export default function ChatSupport() {
 
       // ✅ only override bottom when keyboard is actually open
       if (kbHeight > 100) {
-        const maxHeight = vv.height - 16;
+        const maxHeight = vv.height - vv.offsetTop - 16;
         setWindowHeight(`${Math.min(480, maxHeight)}px`);
         if (chatRef.current) {
-          chatRef.current.style.bottom = `${kbHeight}px`;
+          chatRef.current.style.bottom = `${kbHeight + vv.offsetTop}px`;
         }
       } else {
         // ✅ keyboard closed — reset to default so Tailwind bottom-[84px] takes over
