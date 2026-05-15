@@ -374,17 +374,21 @@ export default function ChatSupport() {
       const vv = window.visualViewport!;
       const kbHeight = window.innerHeight - vv.height;
 
-      // ✅ only override bottom when keyboard is actually open
       if (kbHeight > 100) {
-        const maxHeight = vv.height - vv.offsetTop - 14;
-        setWindowHeight(`${Math.min(480, maxHeight)}px`);
+        const availableHeight = vv.height - 16;
+        const height = Math.min(480, availableHeight);
+
         if (chatRef.current) {
-          chatRef.current.style.bottom = `${kbHeight + vv.offsetTop}px`;
+          // position from top of visual viewport, flush above keyboard
+          chatRef.current.style.bottom = "";
+          chatRef.current.style.top = `${vv.offsetTop + vv.height - height}px`;
+          setWindowHeight(`${height}px`);
         }
       } else {
-        // ✅ keyboard closed — reset to default so Tailwind bottom-[84px] takes over
+        // keyboard closed — reset everything back to Tailwind
         setWindowHeight("min(480px, calc(100dvh - 120px))");
         if (chatRef.current) {
+          chatRef.current.style.top = "";
           chatRef.current.style.bottom = "";
         }
       }
