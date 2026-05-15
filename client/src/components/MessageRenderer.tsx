@@ -83,11 +83,14 @@ function MessageRenderer({
   switch (payload.type) {
     case "text":
       return sender === "ai" ? (
-        <div className="relative -left-3.5 w-[358px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
+        <div className="w-[375px] px-[14px] py-[12px] mt-2 bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
           {payload.message}
         </div>
       ) : (
-        <div>{payload.message}</div>
+        <div className="px-[14px] py-[10px] bg-purple/80 text-white rounded-[14px_14px_4px_14px]">
+          {" "}
+          {payload.message}
+        </div>
       );
 
     case "error":
@@ -99,17 +102,17 @@ function MessageRenderer({
     case "businessTypes":
     case "greeting":
       return (
-        <div className="space-y-4 relative -left-3.5">
+        <div className="space-y-2 w-full">
           <div className="w-[373px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
             <span>{payload.message}</span>
           </div>
-          <div className="flex gap-x-2">
+          <div className="flex gap-x-2  overflow-y-auto scroll-smooth snap-x snap-mandatory scrollbar-hide touch-pan-x">
             {payload?.items?.map((item) => {
               const config = businessTypeConfig[item];
               return (
                 <div
                   key={item}
-                  className="p-1 border border-border rounded-md shadow-md items-center w-[220px]"
+                  className="p-1 border border-border rounded-md shadow-md items-center max-w-[220px] shrink-0 snap-start"
                 >
                   {config.image && (
                     <img
@@ -143,7 +146,7 @@ function MessageRenderer({
 
     case "categories":
       return (
-        <div className="space-y-1 relative -left-3.5">
+        <div className="space-y-2 w-full">
           <div className="w-[382px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
             <span className="  ">{payload.message}</span>
           </div>
@@ -193,7 +196,7 @@ function MessageRenderer({
 
     case "providers":
       return (
-        <div className="space-y-1 relative -left-3.5">
+        <div className="space-y-2 w-full">
           {/* AI message bubble */}
           <div className="w-[382px] px-[14px] py-[12px] bg-surface text-text border border-border rounded-[14px_14px_14px_4px]">
             <span>{payload.message}</span>
