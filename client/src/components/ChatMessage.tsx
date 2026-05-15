@@ -376,7 +376,7 @@ export default function ChatSupport() {
 
       // ✅ only override bottom when keyboard is actually open
       if (kbHeight > 100) {
-        const maxHeight = vv.height - vv.offsetTop - 20;
+        const maxHeight = vv.height - vv.offsetTop - 14;
         setWindowHeight(`${Math.min(480, maxHeight)}px`);
         if (chatRef.current) {
           chatRef.current.style.bottom = `${kbHeight + vv.offsetTop}px`;
