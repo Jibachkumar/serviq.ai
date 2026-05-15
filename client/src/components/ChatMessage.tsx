@@ -333,6 +333,14 @@ export default function ChatSupport() {
     [sendMessage],
   );
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("chat-open");
+    } else {
+      document.body.classList.remove("chat-open");
+    }
+  }, [isOpen]);
+
   return (
     <div className="relative">
       {/* Chat Icon */}
@@ -345,7 +353,7 @@ export default function ChatSupport() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className=" fixed bottom-[84px] right-[8px] lg:bottom-[137px] lg:right-[80px] w-[345px] lg:w-[525px] h-[480px] flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
+        <div className=" fixed bottom-[84px] right-[8px] lg:bottom-[137px] lg:right-[80px] w-[345px] lg:w-[525px] h-[480px] max-h-[100dvh] flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden">
           {/* Header */}
           <div className="bg-surface border-b border-border px-[18px] py-[18px] text-white flex items-center justify-between">
             <div>

@@ -55,6 +55,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+body.chat-open {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
 h1,
 h2,
 h3,
