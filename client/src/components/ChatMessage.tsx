@@ -363,22 +363,24 @@ export default function ChatSupport() {
       if (chatRef.current) {
         chatRef.current.style.bottom = "";
       }
-      return; // ✅ stop here when closed
+      return;
     }
 
-    // ✅ only runs when open
-    const vv = window.visualViewport;
+    const vv = window.visualViewport; // ✅ declare vv here
     if (!vv) return;
 
     const onResize = () => {
-      const offsetFromBottom = window.innerHeight - (vv.offsetTop + vv.height);
-      const fabGap = 1;
-      const totalHeight = Math.min(480, vv.height - fabGap);
+      const kbHeight = window.innerHeight - vv.height;
+      const totalHeight = Math.min(480, vv.height - 8);
+
       setWindowHeight(`${totalHeight}px`);
+
       if (chatRef.current) {
-        chatRef.current.style.bottom = `${offsetFromBottom + fabGap}px`;
+        chatRef.current.style.bottom = `${kbHeight}px`;
       }
     };
+
+    onResize(); // ✅ call immediately on open
 
     vv.addEventListener("resize", onResize);
     return () => vv.removeEventListener("resize", onResize);
