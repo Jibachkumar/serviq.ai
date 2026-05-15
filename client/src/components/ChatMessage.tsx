@@ -11,7 +11,7 @@ const ChatInput = memo(
     handleKeyDown,
     inputRef,
     isSending,
-    onFocusScroll,
+    // onFocusScroll,
   }: {
     input: string;
     isSending: boolean;
@@ -19,7 +19,7 @@ const ChatInput = memo(
     sendMessage: () => void;
     handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     inputRef: React.MutableRefObject<string>;
-    onFocusScroll: () => void;
+    // onFocusScroll: () => void;
   }) => {
     return (
       <div className="px-4 py-3 border-t border-border flex gap-2 bg-surface items-center">
@@ -31,7 +31,7 @@ const ChatInput = memo(
             inputRef.current = e.target.value; // ✅ sync ref
           }}
           onKeyDown={handleKeyDown}
-          onFocus={onFocusScroll}
+          // onFocus={onFocusScroll}
           type="text"
           placeholder="Type your message..."
           className="flex-1 px-3 py-2 text-sm border border-border outline-none rounded-full"
@@ -396,11 +396,11 @@ export default function ChatSupport() {
     return () => vv.removeEventListener("resize", onResize);
   }, [isOpen]); // ✅ re-run when chat opens/closes
 
-  const handleFocusScroll = useCallback(() => {
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 300);
-  }, []);
+  // const handleFocusScroll = useCallback(() => {
+  //   setTimeout(() => {
+  //     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  //   }, 300);
+  // }, []);
 
   return (
     <div className="relative">
@@ -458,7 +458,7 @@ export default function ChatSupport() {
             sendMessage={sendMessage}
             handleKeyDown={handleKeyDown}
             inputRef={inputRef}
-            onFocusScroll={handleFocusScroll}
+            // onFocusScroll={handleFocusScroll}
           />
         </div>
       )}
