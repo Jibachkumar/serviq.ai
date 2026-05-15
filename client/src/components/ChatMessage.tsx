@@ -20,7 +20,7 @@ const ChatInput = memo(
     inputRef: React.MutableRefObject<string>;
   }) => {
     return (
-      <div className="px-4 py-3 border-t border-border flex gap-2 bg-surface items-center">
+      <div className="px-4 lg:py-3 py-2 border-t border-border flex gap-2 bg-surface items-center">
         <input
           value={input}
           disabled={isSending}
@@ -372,7 +372,7 @@ export default function ChatSupport() {
       const kbHeight = window.innerHeight - vv.height;
 
       if (kbHeight > 100) {
-        const availableHeight = vv.height - 4;
+        const availableHeight = vv.height - 3;
         const height = Math.min(480, availableHeight);
 
         if (chatRef.current) {
@@ -415,7 +415,7 @@ export default function ChatSupport() {
           className=" fixed bottom-[84px] right-[1px] lg:bottom-[137px] lg:right-[80px] lg:w-[525px] w-[356px] z-50 flex flex-col bg-ink-light border border-border rounded-[20px] shadow-[0_40px_80px_rgba(0,0,0,0.5),0_0_0_1px_var(--border)] overflow-hidden touch-none"
         >
           {/* Header */}
-          <div className="bg-surface border-b border-border px-[18px] py-[18px] text-white flex items-center justify-between">
+          <div className="bg-surface border-b border-border px-[18px] lg:py-[18px] py-[10px] text-white flex items-center justify-between">
             <div>
               <div className="font-['Syne',sans-serif] text-[13px] font-semibold text-text">
                 Serviq AI
